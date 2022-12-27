@@ -10,14 +10,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Activity {
-  id          String   @id @default(cuid())
-  title       String
+model Tech {
+  id          String    @id @default(cuid())
+  name        String
   description String?
-  date        DateTime
-  projectId   String
-  Project     Project  @relation(fields: [projectId], references: [id])
-  Tech        Tech[]
+  icon        String?
+  Project     Project[]
+  Feature     Feature[]
 }
 
 model Project {
@@ -31,20 +30,20 @@ model Project {
   statusId    String
   Status      ProjectStatus @relation(fields: [statusId], references: [id])
   Tech        Tech[]
-  Activity    Activity[]
-}
-
-model Tech {
-  id          String     @id @default(cuid())
-  name        String
-  description String?
-  icon        String?
-  Project     Project[]
-  Activity    Activity[]
 }
 
 model ProjectStatus {
   id      String    @id @default(cuid())
   status  String
   Project Project[]
+}
+
+model Feature {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  dateLearned DateTime?
+  learned     Boolean
+  techId      String
+  Tech        Tech      @relation(fields: [techId], references: [id])
 }

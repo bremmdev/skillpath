@@ -4,15 +4,15 @@ import {
   techdata,
   projectstatusdata,
   projectdata,
-  activitydata,
+  featuredata,
 } from "./seeddata";
 
 async function clearDatabase() {
   await prisma.$transaction([
-    prisma.tech.deleteMany(),
-    prisma.activity.deleteMany(),
     prisma.project.deleteMany(),
     prisma.projectStatus.deleteMany(),
+    prisma.feature.deleteMany(),
+    prisma.tech.deleteMany(),
   ]);
 }
 
@@ -22,16 +22,16 @@ async function createTechData() {
   });
 }
 
+async function createFeatureData() {
+  await prisma.feature.createMany({
+    data: featuredata,
+  });
+}
+
 async function createProjectStatusData() {
   await prisma.projectStatus.createMany({
     data: projectstatusdata,
   });
-}
-
-function createActivityData() {
-  return activitydata.map((activity) =>
-    prisma.activity.create({ data: activity })
-  );
 }
 
 function createProjectData() {
@@ -45,7 +45,7 @@ async function seed() {
   await createTechData();
   await createProjectStatusData();
   await prisma.$transaction([...createProjectData()]);
-  await prisma.$transaction([...createActivityData()]);
+  await createFeatureData();
   console.timeEnd("seed");
 }
 
