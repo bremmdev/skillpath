@@ -13,8 +13,9 @@ datasource db {
 model Tech {
   id          String    @id @default(cuid())
   name        String
-  description String?
+  description String
   icon        String?
+  url         String
   Project     Project[]
   Feature     Feature[]
 }
@@ -22,7 +23,7 @@ model Tech {
 model Project {
   id          String        @id @default(cuid())
   title       String
-  description String?
+  description String
   repo        String?
   url         String?
   startDate   DateTime
