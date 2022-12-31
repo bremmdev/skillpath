@@ -1,11 +1,11 @@
 import { router, publicProcedure } from "../trpc";
 
-export const techRouter = router({
+export const projectRouter = router({
   findAll: publicProcedure
     .query(async ({ ctx }) => {
-      return await ctx.prisma.tech.findMany({
+      return await ctx.prisma.project.findMany({
         orderBy: {
-          name: "asc"
+          title: "asc"
         }
       });
     }),

@@ -26,6 +26,7 @@ model Project {
   description String
   repo        String?
   url         String?
+  imageUrl    String?
   startDate   DateTime
   endDate     DateTime?
   statusId    String
