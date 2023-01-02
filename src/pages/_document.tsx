@@ -11,6 +11,7 @@ export default function Document() {
         />
       </Head>
       <body className="min-h-screen bg-gradient-to-b from-[#12082a] via-[#1e0e46] to-[#12082a]">
+        <div id="modal" />
         <Main />
         <NextScript />
       </body>
