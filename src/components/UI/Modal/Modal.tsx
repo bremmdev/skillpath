@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
-import Close from '../../../assets/icons/close.svg'
+import Close from '../../../../public/icons/close.svg'
 import Image from "next/image";
 
 type Props = {

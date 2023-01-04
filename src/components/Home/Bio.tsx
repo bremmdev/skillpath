@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-import Github from "../../assets/icons/github.svg";
+import Github from "../../../public/icons/github.svg"
 
 const Bio = () => {
   return (

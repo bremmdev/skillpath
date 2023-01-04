@@ -1,5 +1,5 @@
 import { type NextPage } from "next";
-import ArrowDown from "../assets/icons/arrowDown.svg";
+import ArrowDown from "../../public/icons/arrowDown.svg";
 import Bio from "../components/Home/Bio";
 import Image from "next/image";
 import TechCard from "../components/Home/TechCard";

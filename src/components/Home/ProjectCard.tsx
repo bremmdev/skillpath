@@ -1,8 +1,8 @@
 import React from "react";
 import type { Project } from "@prisma/client";
 import Image from "next/image";
-import Github from "../../assets/icons/github.svg";
-import Web from "../../assets/icons/web.svg";
+import Github from "../../../public/icons/github.svg";
+import Web from "../../../public/icons/web.svg";
 import Modal from "../UI/Modal/Modal";
 
 type Props = {
