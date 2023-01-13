@@ -18,7 +18,9 @@ const ProjectCard = ({ project }: Props) => {
       width={1920}
       height={1080}
       alt="project preview"
-      className={`pointer-events-none ${!showModal ? 'md:pointer-events-auto' : 'pointer-events-none'} cursor-pointer rounded-md shadow-lg transition-all duration-300 hover:scale-102`}
+      className={`pointer-events-none ${
+        !showModal ? "md:pointer-events-auto" : "pointer-events-none"
+      } cursor-pointer rounded-md shadow-lg transition-all duration-300 hover:scale-102`}
       onClick={() => setShowModal(true)}
     />
   );
