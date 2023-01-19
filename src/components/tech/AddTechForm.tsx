@@ -80,7 +80,7 @@ const AddTechForm = () => {
     <div className="relative flex mx-auto w-full flex-col items-center justify-center rounded-2xl bg-blue-100 p-8 text-left text-slate-900 md:p-16 2xl:px-24">
       <form
         onSubmit={handleSubmit}
-        className="flex w-full flex-col gap-4 text-sm xl:text-base"
+        className="flex w-full flex-col gap-2 text-xs sm:gap-4 md:text-sm xl:text-base"
       >
         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
           <label htmlFor="name" className="basis-1/4 font-semibold">
