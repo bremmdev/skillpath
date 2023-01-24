@@ -32,7 +32,6 @@ const Modal = ({ children, onClose }: Props) => {
 
   //close modal if user presses escape key
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
     if (e.key === "Escape") onClose();
   };
 
