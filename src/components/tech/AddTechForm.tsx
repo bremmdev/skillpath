@@ -90,7 +90,8 @@ const AddTechForm = () => {
             type="text"
             name="name"
             placeholder=" "
-            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 focus:text-slate-900 sm:basis-3/4 invalid:border-pink-600 invalid:text-pink-600 [&:placeholder-shown]:border-slate-400"
+            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none sm:basis-3/4 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
+            focus:border-blue-500"
             minLength={2}
             maxLength={50}
             required
@@ -113,7 +114,8 @@ const AddTechForm = () => {
             type="text"
             name="description"
             placeholder=" "
-            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 focus:text-slate-900 sm:basis-3/4 invalid:border-pink-600 invalid:text-pink-600 [&:placeholder-shown]:border-slate-400"
+            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none sm:basis-3/4 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
+            focus:border-blue-500"
             minLength={10}
             maxLength={500}
             required
@@ -143,7 +145,7 @@ const AddTechForm = () => {
             />
             <button
               type="button"
-              className="block cursor-pointer rounded-lg border border-slate-400 bg-white py-2 px-4 text-sm font-semibold text-slate-900 transition-all duration-300 hover:bg-amber-100 sm:px-6 xl:text-base"
+              className="block cursor-pointer rounded-lg border border-slate-400 bg-white py-2 px-4 font-semibold text-slate-900 transition-all duration-300 hover:bg-amber-100 sm:px-6"
               onClick={handleChooseFileClick}
             >
               Choose a file
@@ -179,7 +181,8 @@ const AddTechForm = () => {
             type="text"
             name="url"
             placeholder=" "
-            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 focus:text-slate-900 sm:basis-3/4 invalid:border-pink-600 invalid:text-pink-600 [&:placeholder-shown]:border-slate-400"
+            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none sm:basis-3/4 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
+            focus:border-blue-500"
             title="Must be a valid url"
             pattern="[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)"
             required
