@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"
 import TechCard from "./TechCard";
 import { type Tech } from "@prisma/client";
 import AddIcon from "../../../public/icons/add.svg";

@@ -214,7 +214,7 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
         </button>
       </form>
       {createTechError && (
-        <p className="mt-6 text-center font-bold text-red-500">
+        <p className="mt-6 text-center font-bold text-red-500 text-xs md:text-sm xl:text-base">
           {createTechError.message}
         </p>
       )}
