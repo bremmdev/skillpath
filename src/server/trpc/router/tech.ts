@@ -1,6 +1,7 @@
 import { router, publicProcedure } from "../trpc";
 import { techInputSchema } from "../../../schema/tech.schema";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 
 export const techRouter = router({
   findAll: publicProcedure.query(async ({ ctx }) => {
@@ -14,14 +15,43 @@ export const techRouter = router({
     //use zod schema for input
     .input(techInputSchema)
     .mutation(async ({ ctx, input }) => {
-      return await ctx.prisma.tech.create({
-        data: {
-          name: input.name,
-          description: input.description,
-          icon: input.icon,
-          url: input.url,
-        },
-      });
+      try {
+        //check if tech already exists
+        const tech = await ctx.prisma.tech.findMany({
+          select: {
+            name: true,
+          },
+        });
+
+        const techExists = tech.find(
+          (t) => t.name.toLowerCase() === input.name.toLowerCase()
+        );
+
+        if (techExists) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Tech already exists",
+          });
+        }
+
+        return await ctx.prisma.tech.create({
+          data: {
+            name: input.name,
+            description: input.description,
+            icon: input.icon,
+            url: input.url,
+          },
+        });
+      } catch (err) {
+        if (err instanceof TRPCError) {
+          throw new TRPCError(err);
+        } else {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Internal Server Error",
+          });
+        }
+      }
     }),
   deleteById: publicProcedure
     .input(z.string().cuid())

@@ -4,18 +4,25 @@ import Image from "next/image";
 import { techInputSchema, type TechInput } from "../../schema/tech.schema";
 import { trpc } from "../../utils/trpc";
 
-const AddTechForm = () => {
-  const utils = trpc.useContext();
+const isFile = (icon: unknown): icon is File => {
+  return icon instanceof File;
+};
 
-  const { mutate: createTech, error: createTechError } =
-    trpc.tech.create.useMutation({
-      retry: 3,
-      onSuccess: () => utils.tech.invalidate(),
-    });
-
+const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
   const [uploadText, setUploadText] = React.useState<string>("");
   const uploadBtnRef = React.useRef<HTMLInputElement>(null);
   const [errors, setErrors] = React.useState<Record<string, string>>({}); //errors for the form
+
+  //needed for invalidating the query
+  const utils = trpc.useContext();
+
+  const { mutate: createTech, error: createTechError, isLoading: isAdding } =
+    trpc.tech.create.useMutation({
+      onSuccess: () => {
+        utils.tech.invalidate();
+        onAddTech();
+      },
+    });
 
   const handleChooseFileClick = () => {
     uploadBtnRef.current?.click();
@@ -43,8 +50,8 @@ const AddTechForm = () => {
     setErrors({});
     const errors: Record<string, string> = {};
 
-    //check if there is an svg file
-    if (!(formData.icon instanceof File)) {
+    //check if icon is a file
+    if (!isFile(formData.icon)) {
       return;
     }
 
@@ -72,12 +79,14 @@ const AddTechForm = () => {
 
     if (Object.keys(errors).length > 0) return;
 
-    //TODO do tRPC mutation here
+    //if there are no errors, create the tech
     createTech(inputData);
   };
 
+  console.log(isAdding)
+
   return (
-    <div className="relative flex mx-auto w-full flex-col items-center justify-center rounded-2xl bg-blue-100 p-8 text-left text-slate-900 md:p-16 2xl:px-24">
+    <div className="relative mx-auto flex w-full flex-col items-center justify-center rounded-2xl bg-blue-100 p-8 text-left text-slate-900 md:p-16 2xl:px-24">
       <form
         onSubmit={handleSubmit}
         className="flex w-full flex-col gap-2 text-xs sm:gap-4 md:text-sm xl:text-base"
@@ -90,8 +99,8 @@ const AddTechForm = () => {
             type="text"
             name="name"
             placeholder=" "
-            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none sm:basis-3/4 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
-            focus:border-blue-500"
+            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
+            sm:basis-3/4"
             minLength={2}
             maxLength={50}
             required
@@ -114,8 +123,8 @@ const AddTechForm = () => {
             type="text"
             name="description"
             placeholder=" "
-            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none sm:basis-3/4 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
-            focus:border-blue-500"
+            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
+            sm:basis-3/4"
             minLength={10}
             maxLength={500}
             required
@@ -181,8 +190,8 @@ const AddTechForm = () => {
             type="text"
             name="url"
             placeholder=" "
-            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none sm:basis-3/4 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
-            focus:border-blue-500"
+            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
+            sm:basis-3/4"
             title="Must be a valid url"
             pattern="[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)"
             required
@@ -199,13 +208,14 @@ const AddTechForm = () => {
         <button
           type="submit"
           className="mx-auto mt-4 block cursor-pointer rounded-lg bg-blue-600 py-3 px-6 text-sm font-semibold text-white transition-all duration-300 hover:bg-blue-500 md:text-base"
+          disabled={isAdding}
         >
-          Add Tech
+          {isAdding ? 'Adding Tech...' : 'Add Tech'}
         </button>
       </form>
       {createTechError && (
         <p className="mt-6 text-center font-bold text-red-500">
-          Something went wrong, adding tech failed
+          {createTechError.message}
         </p>
       )}
     </div>

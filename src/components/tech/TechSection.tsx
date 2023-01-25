@@ -40,7 +40,7 @@ const TechSection = ({ tech }: Props) => {
       </button>
       {showAddForm && (
         <Modal onClose={toggleShowAddForm}>
-          <AddTechForm />
+          <AddTechForm onAddTech={toggleShowAddForm} />
         </Modal>
       )}
     </section>
