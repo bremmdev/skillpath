@@ -83,7 +83,8 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
     createTech(inputData);
   };
 
-  console.log(isAdding)
+  const hasFormErrors = Object.keys(errors).length > 0;
+  const showCreateTechError = createTechError && !isAdding && !hasFormErrors
 
   return (
     <div className="relative mx-auto flex w-full flex-col items-center justify-center rounded-2xl bg-blue-100 p-8 text-left text-slate-900 md:p-16 2xl:px-24">
@@ -213,7 +214,7 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
           {isAdding ? 'Adding Tech...' : 'Add Tech'}
         </button>
       </form>
-      {createTechError && (
+      {showCreateTechError && (
         <p className="mt-6 text-center font-bold text-red-500 text-xs md:text-sm xl:text-base">
           {createTechError.message}
         </p>
