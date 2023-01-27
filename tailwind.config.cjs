@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const plugin = require('tailwindcss/plugin')
+const plugin = require("tailwindcss/plugin");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -30,10 +30,24 @@ module.exports = {
       },
       scale: {
         102: "1.02",
-      }
+      },
+      keyframes: {
+        slideIn: {
+          "0%": { transform: "translateY(-200px)" },
+          "50%": { transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        slideIn: "slideIn 0.5s ease-in-out",
+      },
     },
   },
-  plugins: [  plugin(function({ addVariant }) {
-    addVariant('invalid-unfocused', '&:invalid:not(:placeholder-shown):not(:focus)')
-  })],
+  plugins: [
+    plugin(function ({ addVariant }) {
+      addVariant(
+        "invalid-unfocused",
+        "&:invalid:not(:placeholder-shown):not(:focus)"
+      );
+    }),
+  ],
 };
