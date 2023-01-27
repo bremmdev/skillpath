@@ -2,24 +2,19 @@ import type { Tech } from "@prisma/client";
 import Image from "next/image";
 import { encode } from "../../utils/base64";
 import DeleteIcon from "../../../public/icons/delete.svg";
-import { trpc } from "../../utils/trpc";
+import React from "react";
 
 type Props = {
   tech: Tech;
+  deleteTechById: (id: string) => void;
+  isDeleting: boolean;
 };
 
-const TechCard = ({ tech }: Props) => {
-  const utils = trpc.useContext();
-
-  const { mutate: deleteTech } = trpc.tech.deleteById.useMutation({
-    onSuccess: () => {
-      utils.tech.invalidate();
-    },
-  });
-
+const TechCard = ({ tech, deleteTechById, isDeleting }: Props) => {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
-    deleteTech(tech.id);
+    //prevent concurrent deletion
+    if (!isDeleting) deleteTechById(tech.id);
   };
 
   return (

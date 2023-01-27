@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { capitalize } from "../../utils/capitalize";
 import Image from "next/image";
 import Success from "../../../public/icons/success.svg";
@@ -12,6 +12,8 @@ type Props = {
 };
 
 const Alert = (props: Props) => {
+  const [isVisible, setIsVisible] = useState(true);
+
   const { message, type } = props;
 
   const colorClassMap = {
@@ -26,9 +28,22 @@ const Alert = (props: Props) => {
     loading: Loading,
   };
 
-  return (
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (type === "success") {
+      timeout = setTimeout(() => {
+        setIsVisible(false);
+      }, 2500);
+    }
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [type]);
+
+  return isVisible ? (
     <div
-      className={`${colorClassMap[type]} animate-slideIn fixed top-8 left-6 right-6 z-10 mx-auto flex items-center gap-4 rounded-md py-3 px-4 text-left text-sm text-slate-900 md:max-w-xl md:px-6 md:text-base`}
+      className={`${colorClassMap[type]} fixed top-8 left-6 right-6 z-10 mx-auto flex animate-slideIn items-center gap-4 rounded-md py-3 px-4 text-left text-sm text-slate-900 md:max-w-xl md:px-6 md:text-base`}
     >
       <Image
         src={iconMap[type]}
@@ -47,9 +62,10 @@ const Alert = (props: Props) => {
         alt={type}
         width={28}
         height={28}
+        onClick={() => setIsVisible(false)}
       />
     </div>
-  );
+  ) : null;
 };
 
 export default Alert;

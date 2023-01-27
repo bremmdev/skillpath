@@ -56,10 +56,34 @@ export const techRouter = router({
   deleteById: publicProcedure
     .input(z.string().cuid())
     .mutation(async ({ ctx, input }) => {
-      return await ctx.prisma.tech.delete({
-        where: {
-          id: input,
-        },
-      });
+      try {
+        //check if tech exists
+        const tech = await ctx.prisma.tech.findUnique({
+          where: {
+            id: input,
+          },
+        });
+
+        if (!tech) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Tech does not exist",
+          });
+        }
+
+        await ctx.prisma.tech.delete({
+          where: {
+            id: input
+          },
+        });
+      } catch (err) {
+        if (err instanceof TRPCError) {
+          throw new TRPCError(err);
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Internal Server Error",
+        });
+      }
     }),
 });

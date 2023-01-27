@@ -16,13 +16,16 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
   //needed for invalidating the query
   const utils = trpc.useContext();
 
-  const { mutate: createTech, error: createTechError, isLoading: isAdding } =
-    trpc.tech.create.useMutation({
-      onSuccess: () => {
-        utils.tech.invalidate();
-        onAddTech();
-      },
-    });
+  const {
+    mutate: createTech,
+    error: createTechError,
+    isLoading: isAdding,
+  } = trpc.tech.create.useMutation({
+    onSuccess: () => {
+      onAddTech();
+      utils.tech.invalidate();
+    },
+  });
 
   const handleChooseFileClick = () => {
     uploadBtnRef.current?.click();
@@ -84,7 +87,7 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
   };
 
   const hasFormErrors = Object.keys(errors).length > 0;
-  const showCreateTechError = createTechError && !isAdding && !hasFormErrors
+  const showCreateTechError = createTechError && !isAdding && !hasFormErrors;
 
   return (
     <div className="relative mx-auto flex w-full flex-col items-center justify-center rounded-2xl bg-blue-100 p-8 text-left text-slate-900 md:p-16 2xl:px-24">
@@ -211,11 +214,11 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
           className="mx-auto mt-4 block cursor-pointer rounded-lg bg-blue-600 py-3 px-6 text-sm font-semibold text-white transition-all duration-300 hover:bg-blue-500 md:text-base"
           disabled={isAdding}
         >
-          {isAdding ? 'Adding Tech...' : 'Add Tech'}
+          {isAdding ? "Adding Tech..." : "Add Tech"}
         </button>
       </form>
       {showCreateTechError && (
-        <p className="mt-6 text-center font-bold text-red-500 text-xs md:text-sm xl:text-base">
+        <p className="mt-6 text-center text-xs font-bold text-red-500 md:text-sm xl:text-base">
           {createTechError.message}
         </p>
       )}
