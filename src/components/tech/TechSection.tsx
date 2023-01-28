@@ -22,7 +22,7 @@ const TechSection = ({ tech }: Props) => {
     mutate: deleteTechById,
     isLoading: isDeleting,
     error: deletionError,
-    isSuccess: deleteSuccess
+    isSuccess: deleteSuccess,
   } = trpc.tech.deleteById.useMutation({
     onSuccess: () => {
       utils.tech.invalidate();
@@ -39,13 +39,13 @@ const TechSection = ({ tech }: Props) => {
     setCreateSuccess(false);
   };
 
-  console.log(deleteTechById)
-
   const alertMessages = (
     <>
       {isDeleting && <Alert message="Deleting tech..." type="loading" />}
       {deletionError && <Alert message={deletionError.message} type="error" />}
-      {deleteSuccess && ( <Alert message="Tech successfully deleted" type="success" />)}
+      {deleteSuccess && (
+        <Alert message="Tech successfully deleted" type="success" />
+      )}
       {createSuccess && (
         <Alert message="Tech successfully added" type="success" />
       )}

@@ -36,9 +36,14 @@ module.exports = {
           "0%": { transform: "translateY(-200px)" },
           "50%": { transform: "translateY(0)" },
         },
+        fadeIn: {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 },
+        },
       },
       animation: {
         slideIn: "slideIn 0.5s ease-in-out",
+        fadeIn: "fadeIn 0.5s ease-in-out",
       },
     },
   },
@@ -48,6 +53,7 @@ module.exports = {
         "invalid-unfocused",
         "&:invalid:not(:placeholder-shown):not(:focus)"
       );
+      addVariant("small-height", "@media (max-height: 600px)");
     }),
   ],
 };
