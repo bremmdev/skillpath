@@ -3,6 +3,7 @@ import ClearIcon from "../../../public/icons/clear.svg";
 import Image from "next/image";
 import { techInputSchema, type TechInput } from "../../schema/tech.schema";
 import { trpc } from "../../utils/trpc";
+import Loading from "../../../public/icons/loading.svg";
 
 const isFile = (icon: unknown): icon is File => {
   return icon instanceof File;
@@ -214,7 +215,7 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
           className="mx-auto mt-4 block cursor-pointer rounded-lg bg-blue-600 py-3 px-6 text-sm font-semibold text-white transition-all duration-300 hover:bg-blue-500 md:text-base"
           disabled={isAdding}
         >
-          {isAdding ? "Adding Tech..." : "Add Tech"}
+          {isAdding ? <span className="flex gap-2 items-center"><Image src={Loading} className="animate-spin invert" width={24} height={24} alt=""/>Adding Tech...</span> : "Add Tech"}
         </button>
       </form>
       {showCreateTechError && (

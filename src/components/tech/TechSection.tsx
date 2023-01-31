@@ -59,7 +59,7 @@ const TechSection = ({ tech }: Props) => {
         Tech
       </h2>
       <p className="text-base sm:text-lg">This is the tech I use regularly:</p>
-      <div className="grid-cols1 mt-6 grid gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
         {tech?.map((tech) => (
           <TechCard
             key={tech.id}

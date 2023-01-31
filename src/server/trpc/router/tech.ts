@@ -2,14 +2,22 @@ import { router, publicProcedure } from "../trpc";
 import { techInputSchema } from "../../../schema/tech.schema";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
 export const techRouter = router({
   findAll: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.prisma.tech.findMany({
-      orderBy: {
-        name: "asc",
-      },
-    });
+    try {
+      return await ctx.prisma.tech.findMany({
+        orderBy: {
+          name: "asc",
+        },
+      });
+    } catch (err) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Internal Server Error",
+      });
+    }
   }),
   create: publicProcedure
     //use zod schema for input
@@ -73,10 +81,20 @@ export const techRouter = router({
 
         await ctx.prisma.tech.delete({
           where: {
-            id: input
+            id: input,
           },
         });
       } catch (err) {
+        if (
+          err instanceof PrismaClientKnownRequestError &&
+          err.code === "P2003"
+        ) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "There are still projects using this tech",
+          });
+        }
+
         if (err instanceof TRPCError) {
           throw new TRPCError(err);
         }

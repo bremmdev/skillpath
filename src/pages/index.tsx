@@ -13,7 +13,6 @@ const Home = () => {
   //queries will be fetched instantly because of the cached response from the server
   const { data: tech } = trpc.tech.findAll.useQuery();
   const { data: projects } = trpc.project.findAll.useQuery();
-  // const { mutate: createTech } = trpc.tech.create.useMutation();
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 py-20 px-4 text-center text-white sm:gap-12 sm:py-28 sm:px-8">
