@@ -27,21 +27,38 @@ const Home = () => {
 export default Home;
 
 export async function getStaticProps() {
-  const ssg = await createProxySSGHelpers({
-    router: appRouter,
-    ctx: {
-      prisma: prisma,
-    },
-    transformer: superjson,
-  });
+  // const ssg = await createProxySSGHelpers({
+  //   router: appRouter,
+  //   ctx: {
+  //     prisma: prisma,
+  //   },
+  //   transformer: superjson,
+  // });
 
-  //prefetch data for ssg
-  await ssg.project.findAll.fetch();
-  await ssg.tech.findAll.fetch();
+  // //prefetch data for ssg
+  // await ssg.project.findAll.fetch();
+  // await ssg.tech.findAll.fetch();
+
+  // return {
+  //   props: {
+  //     trpcState: ssg.dehydrate(),
+  //   },
+  //   revalidate: 10,
+  // };
+
+  const caller = appRouter.createCaller({prisma})
+  const projects = await caller.project.findAll()
+  const tech = await caller.tech.findAll()
+
+  const superjsonData = superjson.serialize({
+    projects,
+    tech
+  })
+
 
   return {
     props: {
-      trpcState: ssg.dehydrate(),
+     superjsonData
     },
     revalidate: 10,
   };
