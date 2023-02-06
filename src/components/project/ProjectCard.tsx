@@ -4,13 +4,25 @@ import Image from "next/image";
 import Github from "../../../public/icons/github.svg";
 import Web from "../../../public/icons/web.svg";
 import Modal from "../UI/Modal/Modal";
+import DeleteIcon from "../../../public/icons/delete.svg";
 
 type Props = {
-  project: Project;
+    project: Project;
+    deleteProjectById: (id: string) => void;
+    isDeleting: boolean;
 };
 
-const ProjectCard = ({ project }: Props) => {
+
+const ProjectCard = (props: Props) => {
   const [showModal, setShowModal] = React.useState(false);
+
+  const { project, deleteProjectById, isDeleting } = props;
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    //prevent concurrent deletion
+    if (!isDeleting) deleteProjectById(project.id);
+  };
 
   const ImageComponent = (
     <Image
@@ -26,7 +38,13 @@ const ProjectCard = ({ project }: Props) => {
   );
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-slate-400 bg-[#170a37] p-5 text-center sm:p-8">
+    <div className="flex relative flex-col gap-4 rounded-xl border border-slate-400 bg-[#170a37] p-5 text-center sm:p-8">
+       <Image
+          src={DeleteIcon}
+          alt="Delete Icon"
+          className="absolute right-6 top-6 h-5 w-5 cursor-pointer transition-all duration-300 hover:scale-105"
+          onClick={handleDelete}
+        />
       <h3 className="text-xl font-bold uppercase text-purple-400 sm:text-2xl">
         {project.title}
       </h3>
