@@ -4,6 +4,7 @@ import Image from "next/image";
 import { techInputSchema, type TechInput } from "../../schema/tech.schema";
 import { trpc } from "../../utils/trpc";
 import Loading from "../../../public/icons/loading.svg";
+import TextInput from "../UI/Form/TextInput";
 
 const isFile = (icon: unknown): icon is File => {
   return icon instanceof File;
@@ -96,53 +97,24 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
         onSubmit={handleSubmit}
         className="flex w-full flex-col gap-2 text-xs sm:gap-4 md:text-sm xl:text-base"
       >
-        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
-          <label htmlFor="name" className="basis-1/4 font-semibold">
-            Name
-          </label>
-          <input
-            type="text"
-            name="name"
-            placeholder=" "
-            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
-            sm:basis-3/4"
-            minLength={2}
-            maxLength={50}
-            required
-          />
-        </div>
-        {errors.name && (
-          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
-            <div className="basis-1/4"></div>
-            <p className="w-full font-semibold text-red-500 sm:basis-3/4">
-              {errors.name}
-            </p>
-          </div>
-        )}
+        <TextInput
+          htmlName="name"
+          label="Name"
+          minLength={2}
+          maxLength={50}
+          required
+          error={errors.name}
+        />
 
-        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
-          <label htmlFor="description" className="basis-1/4 font-semibold">
-            Description
-          </label>
-          <input
-            type="text"
-            name="description"
-            placeholder=" "
-            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
-            sm:basis-3/4"
-            minLength={10}
-            maxLength={500}
-            required
-          />
-        </div>
-        {errors.description && (
-          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
-            <div className="basis-1/4"></div>
-            <p className="w-full font-semibold text-red-500 sm:basis-3/4">
-              {errors.description}
-            </p>
-          </div>
-        )}
+        <TextInput
+          htmlName="description"
+          label="Description"
+          minLength={10}
+          maxLength={500}
+          required
+          error={errors.description}
+        />
+
         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
           <label htmlFor="icon" className="basis-1/4 font-semibold">
             Icon
@@ -187,35 +159,35 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
             </p>
           </div>
         )}
-        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
-          <label htmlFor="url" className="basis-1/4 font-semibold">
-            URL
-          </label>
-          <input
-            type="text"
-            name="url"
-            placeholder=" "
-            className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
-            sm:basis-3/4"
-            title="Must be a valid url"
-            pattern="[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)"
-            required
-          />
-        </div>
-        {errors.url && (
-          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
-            <div className="basis-1/4"></div>
-            <p className="w-full font-semibold text-red-500 sm:basis-3/4">
-              {errors.url}
-            </p>
-          </div>
-        )}
+
+        <TextInput
+          htmlName="url"
+          label="URL"
+          title="Must be a valid url"
+          pattern="[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)"
+          required
+          error={errors.url}
+        />
+
         <button
           type="submit"
           className="mx-auto mt-4 block cursor-pointer rounded-lg bg-blue-600 py-3 px-6 text-sm font-semibold text-white transition-all duration-300 hover:bg-blue-500 md:text-base"
           disabled={isAdding}
         >
-          {isAdding ? <span className="flex gap-2 items-center"><Image src={Loading} className="animate-spin invert" width={24} height={24} alt=""/>Adding Tech...</span> : "Add Tech"}
+          {isAdding ? (
+            <span className="flex items-center gap-2">
+              <Image
+                src={Loading}
+                className="animate-spin invert"
+                width={24}
+                height={24}
+                alt=""
+              />
+              Adding Tech...
+            </span>
+          ) : (
+            "Add Tech"
+          )}
         </button>
       </form>
       {showCreateTechError && (
