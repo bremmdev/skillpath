@@ -4,7 +4,7 @@ import {
   techdata,
   projectstatusdata,
   projectdata,
-  featuredata,
+  // featuredata,
 } from "./seeddata";
 
 async function clearDatabase() {
@@ -22,11 +22,11 @@ async function createTechData() {
   });
 }
 
-async function createFeatureData() {
-  await prisma.feature.createMany({
-    data: featuredata,
-  });
-}
+// async function createFeatureData() {
+//   await prisma.feature.createMany({
+//     data: featuredata,
+//   });
+// }
 
 async function createProjectStatusData() {
   await prisma.projectStatus.createMany({
@@ -45,7 +45,7 @@ async function seed() {
   await createTechData();
   await createProjectStatusData();
   await prisma.$transaction([...createProjectData()]);
-  await createFeatureData();
+  // await createFeatureData();
   console.timeEnd("seed");
 }
 

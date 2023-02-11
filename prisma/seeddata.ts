@@ -1,21 +1,21 @@
-export const featuredata = [
-  {
-    id: "clc66bebi000008l806l1awqu",
-    title: "seed",
-    description:
-      "Fill the database with initial data for validating and using your application in a development environment",
-    learned: true,
-    techId: "clc4m38z80000ujvstbxzhy2a",
-  },
-  {
-    id: "clc66ix6d000008mqf2a2be15",
-    title: "migrations",
-    description:
-      "Migrations help you transition your database schema from one state to another",
-    learned: true,
-    techId: "clc4m38z80000ujvstbxzhy2a",
-  },
-];
+// export const featuredata = [
+//   {
+//     id: "clc66bebi000008l806l1awqu",
+//     title: "seed",
+//     description:
+//       "Fill the database with initial data for validating and using your application in a development environment",
+//     learned: true,
+//     techId: "clc4m38z80000ujvstbxzhy2a",
+//   },
+//   {
+//     id: "clc66ix6d000008mqf2a2be15",
+//     title: "migrations",
+//     description:
+//       "Migrations help you transition your database schema from one state to another",
+//     learned: true,
+//     techId: "clc4m38z80000ujvstbxzhy2a",
+//   },
+// ];
 
 export const projectstatusdata = [
   {

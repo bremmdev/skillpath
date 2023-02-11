@@ -1,13 +1,21 @@
 import { type Project } from "@prisma/client";
+import React from "react";
 import ProjectCard from "./ProjectCard";
 import { trpc } from "../../utils/trpc";
 import Alert from "../UI/Alert";
+import Modal from "../UI/Modal/Modal";
+import AddProjectForm from "./AddProjectForm/AddProjectForm";
+import Image from "next/image";
+import AddIcon from "../../../public/icons/add.svg";
 
 type Props = {
   projects: Project[];
 };
 
 const ProjectSection = ({ projects }: Props) => {
+  const [showAddForm, setSHowAddForm] = React.useState(false);
+  const [createSuccess, setCreateSuccess] = React.useState(false);
+
   const utils = trpc.useContext();
 
   const {
@@ -21,16 +29,26 @@ const ProjectSection = ({ projects }: Props) => {
     },
   });
 
+  const handleAddProject = () => {
+    toggleShowAddForm();
+    setCreateSuccess(true);
+  };
+
+  const toggleShowAddForm = () => {
+    setSHowAddForm((prevState) => !prevState);
+    setCreateSuccess(false);
+  };
+
   const alertMessages = (
     <>
-      {isDeleting && <Alert message="Deleting tech..." type="loading" />}
+      {isDeleting && <Alert message="Deleting project..." type="loading" />}
       {deletionError && <Alert message={deletionError.message} type="error" />}
       {deleteSuccess && (
         <Alert message="Project successfully deleted" type="success" />
       )}
-      {/* {createSuccess && (
-        <Alert message="Tech successfully added" type="success" />
-      )} */}
+      {createSuccess && (
+        <Alert message="Project successfully added" type="success" />
+      )}
     </>
   );
 
@@ -54,6 +72,22 @@ const ProjectSection = ({ projects }: Props) => {
           />
         ))}
       </div>
+      {!showAddForm && (
+        <button className="my-4">
+          <Image
+            src={AddIcon}
+            className="h-16 w-16 cursor-pointer p-2 opacity-80 hover:opacity-100"
+            alt="add tech"
+            onClick={toggleShowAddForm}
+          />
+        </button>
+      )}
+
+      {showAddForm && (
+        <Modal onClose={toggleShowAddForm}>
+          <AddProjectForm onAddProject={handleAddProject} />
+        </Modal>
+      )}
     </section>
   );
 };

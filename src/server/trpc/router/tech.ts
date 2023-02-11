@@ -14,7 +14,7 @@ export const techRouter = router({
     } catch (err) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Internal Server Error",
+        message: "Could not fetch tech",
       });
     }
   }),
