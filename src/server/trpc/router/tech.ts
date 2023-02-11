@@ -2,7 +2,6 @@ import { router, publicProcedure } from "../trpc";
 import { techInputSchema } from "../../../schema/tech.schema";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
 export const techRouter = router({
   findAll: publicProcedure.query(async ({ ctx }) => {
@@ -79,22 +78,29 @@ export const techRouter = router({
           });
         }
 
-        await ctx.prisma.tech.delete({
+        const projects = await ctx.prisma.project.findMany({
           where: {
-            id: input,
+            Tech: {
+              some: {
+                id: input,
+              },
+            },
           },
         });
-      } catch (err) {
-        if (
-          err instanceof PrismaClientKnownRequestError &&
-          err.code === "P2003"
-        ) {
+
+        if (projects.length > 0) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "There are still projects using this tech",
           });
         }
 
+        await ctx.prisma.tech.delete({
+          where: {
+            id: input,
+          },
+        });
+      } catch (err) {
         if (err instanceof TRPCError) {
           throw new TRPCError(err);
         }

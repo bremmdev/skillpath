@@ -3,7 +3,7 @@ import ClearIcon from "../../../public/icons/clear.svg";
 import Image from "next/image";
 import { techInputSchema, type TechInput } from "../../schema/tech.schema";
 import { trpc } from "../../utils/trpc";
-import Loading from "../../../public/icons/loading.svg";
+import Spinner from "../UI/Spinner";
 import TextInput from "../UI/Form/TextInput";
 
 const isFile = (icon: unknown): icon is File => {
@@ -176,13 +176,7 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
         >
           {isAdding ? (
             <span className="flex items-center gap-2">
-              <Image
-                src={Loading}
-                className="animate-spin invert"
-                width={24}
-                height={24}
-                alt=""
-              />
+             <Spinner inverted={true}/>
               Adding Tech...
             </span>
           ) : (
