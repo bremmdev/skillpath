@@ -6,7 +6,6 @@ import {
 import { trpc } from "../../../utils/trpc";
 import Spinner from "../../UI/Spinner";
 import TextInput from "../../UI/Form/TextInput";
-import ProjectStatusSelect from "./ProjectStatusSelect";
 import TechSelection from "./TechSelection";
 
 const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
@@ -15,11 +14,6 @@ const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
   //needed for invalidating the query
   const utils = trpc.useContext();
 
-  const {
-    data: status,
-    error: projectStatusError,
-    isLoading: projectStatusLoading,
-  } = trpc.projectStatus.findAll.useQuery();
   const {
     data: tech,
     isLoading: techLoading,
@@ -50,7 +44,6 @@ const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
       ...formData,
       tech: allTechFromForm as string | string[],
       startDate: new Date(formData.startDate as string),
-      endDate: null,
     } as ProjectInput;
 
     //check if the data is valid
@@ -126,7 +119,6 @@ const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
           label="Image URL"
           title="Must be Github image url"
           pattern="(https:\/\/)?user-images.githubusercontent.com\/.+\.(png|jpg|jpeg|svg|webp|avif)"
-          required
           error={errors.imageUrl}
         />
 
@@ -144,20 +136,6 @@ const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
       sm:basis-3/4"
             required
             defaultValue={new Date().toISOString().split("T")[0]}
-          />
-        </div>
-
-        {/*PROJECT STATUS SELECT*/}
-        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
-          <label htmlFor="statusId" className="basis-1/4 font-semibold">
-            <span className="after:ml-1 after:text-red-500 after:content-['*']">
-              Status
-            </span>
-          </label>
-          <ProjectStatusSelect
-            status={status}
-            error={projectStatusError?.message}
-            isLoading={projectStatusLoading}
           />
         </div>
 

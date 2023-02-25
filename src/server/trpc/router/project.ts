@@ -78,7 +78,6 @@ export const projectRouter = router({
         repo,
         url,
         imageUrl,
-        statusId,
         startDate,
         tech,
       } = input;
@@ -90,7 +89,6 @@ export const projectRouter = router({
             repo,
             url,
             imageUrl,
-            statusId,
             startDate,
             Tech: {
               connect: tech.map((id) => ({ id })),

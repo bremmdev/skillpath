@@ -26,26 +26,17 @@ model Project {
   description String
   repo        String
   url         String
-  imageUrl    String
+  imageUrl    String?
   startDate   DateTime
-  endDate     DateTime?
-  statusId    String
-  Status      ProjectStatus @relation(fields: [statusId], references: [id]) 
   Tech        Tech[]
 }
 
-model ProjectStatus {
-  id      String    @id @default(cuid())
-  status  String
-  Project Project[]
-}
-
 model Feature {
-  id          String    @id @default(cuid())
-  title       String
-  description String?
-  dateLearned DateTime?
-  learned     Boolean
-  techId      String
-  Tech        Tech      @relation(fields: [techId], references: [id])
+  id           String    @id @default(cuid())
+  title        String
+  description  String
+  dateLearned  DateTime
+  dateReviewed DateTime?
+  techId       String
+  Tech         Tech      @relation(fields: [techId], references: [id])
 }

@@ -5,13 +5,13 @@ import Github from "../../../public/icons/github.svg";
 import Web from "../../../public/icons/web.svg";
 import Modal from "../UI/Modal/Modal";
 import DeleteIcon from "../../../public/icons/delete.svg";
+import previewImage from "../../../public/images/project_preview.webp";
 
 type Props = {
-    project: Project;
-    deleteProjectById: (id: string) => void;
-    isDeleting: boolean;
+  project: Project;
+  deleteProjectById: (id: string) => void;
+  isDeleting: boolean;
 };
-
 
 const ProjectCard = (props: Props) => {
   const [showModal, setShowModal] = React.useState(false);
@@ -24,11 +24,17 @@ const ProjectCard = (props: Props) => {
     if (!isDeleting) deleteProjectById(project.id);
   };
 
+  const imageSrc =
+    project.imageUrl && project.imageUrl.length > 0
+      ? project.imageUrl
+      : previewImage;
+
   const ImageComponent = (
     <Image
-      src={project.imageUrl ?? ""}
+      src={imageSrc}
       width={1920}
       height={1080}
+      priority={imageSrc === previewImage}
       alt="project preview"
       className={`pointer-events-none ${
         !showModal ? "md:pointer-events-auto" : "pointer-events-none"
@@ -38,13 +44,13 @@ const ProjectCard = (props: Props) => {
   );
 
   return (
-    <div className="flex relative flex-col gap-4 rounded-xl border border-slate-400 bg-[#170a37] p-5 text-center sm:p-8">
-       <Image
-          src={DeleteIcon}
-          alt="Delete Icon"
-          className="absolute right-6 top-6 h-5 w-5 cursor-pointer transition-all duration-300 hover:scale-105"
-          onClick={handleDelete}
-        />
+    <div className="relative flex flex-col gap-4 rounded-xl border border-slate-400 bg-[#170a37] p-5 text-center sm:p-8">
+      <Image
+        src={DeleteIcon}
+        alt="Delete Icon"
+        className="absolute right-6 top-6 h-5 w-5 cursor-pointer transition-all duration-300 hover:scale-105"
+        onClick={handleDelete}
+      />
       <h3 className="text-xl font-bold uppercase text-purple-400 sm:text-2xl">
         {project.title}
       </h3>

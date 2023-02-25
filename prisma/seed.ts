@@ -1,16 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-import {
-  techdata,
-  projectstatusdata,
-  projectdata,
-  // featuredata,
-} from "./seeddata";
+import { techdata, projectdata, featuredata } from "./seeddata";
 
 async function clearDatabase() {
   await prisma.$transaction([
     prisma.project.deleteMany(),
-    prisma.projectStatus.deleteMany(),
     prisma.feature.deleteMany(),
     prisma.tech.deleteMany(),
   ]);
@@ -22,30 +16,22 @@ async function createTechData() {
   });
 }
 
-// async function createFeatureData() {
-//   await prisma.feature.createMany({
-//     data: featuredata,
-//   });
-// }
-
-async function createProjectStatusData() {
-  await prisma.projectStatus.createMany({
-    data: projectstatusdata,
-  });
+function createProjectData() {
+  return projectdata.map((project) => prisma.project.create({ data: project }));
 }
 
-function createProjectData() {
-  //create sublimetrack and skillpath project
-  return projectdata.map((project) => prisma.project.create({ data: project }));
+async function createFeatureData() {
+  await prisma.feature.createMany({
+    data: featuredata,
+  });
 }
 
 async function seed() {
   console.time("seed");
   await clearDatabase();
   await createTechData();
-  await createProjectStatusData();
   await prisma.$transaction([...createProjectData()]);
-  // await createFeatureData();
+  await createFeatureData();
   console.timeEnd("seed");
 }
 

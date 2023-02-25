@@ -7,13 +7,17 @@ type Props = React.ComponentPropsWithoutRef<"input"> & {
 };
 
 const TextInput = (props: Props) => {
-  const { htmlName, label, error, ...remainingProps } = props;
+  const { htmlName, label, error, required, ...remainingProps } = props;
+
+  const requiredClassNames = required
+    ? "after:content-['*'] after:text-red-500 after:ml-1"
+    : "";
 
   return (
     <React.Fragment>
       <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center md:gap-6">
         <label htmlFor={htmlName} className="basis-1/4 font-semibold">
-          <span className="after:content-['*'] after:text-red-500 after:ml-1">{label}</span>
+          <span className={requiredClassNames}>{label}</span>
         </label>
         <input
           type="text"

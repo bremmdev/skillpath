@@ -11,10 +11,8 @@ export const projectInputSchema = z.object({
     .max(500, "Description can't be longer than 500 characters"),
   repo: z.string().url("URL is not valid"),
   url: z.string().url("URL is not valid"),
-  imageUrl: z.string().url("URL is not valid"),
+  imageUrl: z.union([z.literal(""), z.string().url("URL is not valid")]),
   startDate: z.date(),
-  endDate: z.date().nullish(),
-  statusId: z.string(),
   tech: z.array(z.string()),
 });
 
