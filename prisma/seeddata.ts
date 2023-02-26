@@ -155,13 +155,15 @@ export const featuredata = [
     title: "useLayoutEffect",
     description: "Version of useEffect that fires before the UI is painted",
     dateLearned: new Date("2023-01-01"),
+    dateReviewed: new Date("2023-01-30"),
     techId: "clc4m38z80007ujvsgc43bb77",
   },
   {
     id: "clc66ix6d000008mqf2a2be15",
     title: "Portals",
-    description: "render some children into a different part of the DOM",
+    description: "Render some children into a different part of the DOM",
     dateLearned: new Date("2023-01-02"),
+    dateReviewed: new Date("2023-02-20"),
     techId: "clc4m38z80007ujvsgc43bb77",
   },
   {
@@ -170,6 +172,23 @@ export const featuredata = [
     description:
       "Invalidate queries after a mutation using the invalidate helper",
     dateLearned: new Date("2023-01-14"),
+    dateReviewed: new Date("2023-02-18"),
     techId: "clc4m38z80003ujvsmnzq2wib",
+  },
+  {
+    id: "clelwga2v000008l9bo97eyvo",
+    title: "const assertions",
+    description:
+      "Tells the compiler to infer the narrowest or most specific type it can for an expression",
+    dateLearned: new Date("2023-01-20"),
+    techId: "clc4m38z80002ujvsiv97wfcx",
+  },
+  {
+    id: "clelwj0an000108l959woai46",
+    title: "Add variant",
+    description:
+      "Register your own custom modifiers that can be used just like built-in variants like 'hover' or 'focus'",
+    dateLearned: new Date("2023-01-24"),
+    techId: "clc4m38z80004ujvst6dqi45a",
   },
 ];

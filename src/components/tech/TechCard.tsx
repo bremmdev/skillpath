@@ -24,7 +24,7 @@ const TechCard = ({ tech, deleteTechById, isDeleting }: Props) => {
       rel="noreferrer"
       className="flex flex-col rounded-md border border-slate-300 bg-[#00CCFF1A] text-left opacity-90 transition-all hover:border-[#00CCFF] hover:opacity-100 hover:shadow-[0_0_0_1px_rgb(0,204,255)]"
     >
-      <div className="flex items-center justify-between bg-[#00CCFF28] py-3 px-6">
+      <div className="flex items-center justify-between bg-blue-900 py-3 px-6 rounded-md">
         <div className="flex items-center gap-3">
           {tech.icon && (
             <Image
