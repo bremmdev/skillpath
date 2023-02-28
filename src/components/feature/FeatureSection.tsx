@@ -5,10 +5,11 @@ import Modal from "../UI/Modal/Modal";
 import { trpc } from "../../utils/trpc";
 import Alert from "../UI/Alert";
 import FeatureList from "./FeatureList";
-import type {Feature, Tech} from "@prisma/client";
+import type { Feature, Tech } from "@prisma/client";
+import AddFeatureForm from "./AddFeatureForm";
 
 type Props = {
-  features: Array<Feature & { Tech: Pick<Tech, 'name'>}>;
+  features: Array<Feature & { Tech: Pick<Tech, "name"> }>;
 };
 
 const FeatureSection = ({ features }: Props) => {
@@ -38,25 +39,25 @@ const FeatureSection = ({ features }: Props) => {
     setCreateSuccess(false);
   };
 
-  // const alertMessages = (
-  //   <>
-  //     {isDeleting && <Alert message="Deleting tech..." type="loading" />}
-  //     {deletionError && <Alert message={deletionError.message} type="error" />}
-  //     {deleteSuccess && (
-  //       <Alert message="Tech successfully deleted" type="success" />
-  //     )}
-  //     {createSuccess && (
-  //       <Alert message="Tech successfully added" type="success" />
-  //     )}
-  //   </>
-  // );
+  const alertMessages = (
+    <>
+      {isDeleting && <Alert message="Deleting feature..." type="loading" />}
+      {deletionError && <Alert message={deletionError.message} type="error" />}
+      {deleteSuccess && (
+        <Alert message="Feature successfully deleted" type="success" />
+      )}
+      {createSuccess && (
+        <Alert message="Feature successfully added" type="success" />
+      )}
+    </>
+  );
 
   return (
     <section
       id="features"
       className="mb-4 w-full text-lg text-slate-300 sm:mb-8"
     >
-      {/* {alertMessages} */}
+      {alertMessages}
       <h2 className="mb-6 text-3xl font-extrabold text-white sm:mb-8 md:text-4xl lg:text-6xl">
         Features
       </h2>
@@ -64,7 +65,7 @@ const FeatureSection = ({ features }: Props) => {
         I have recently learned these features:
       </p>
       <div className="mt-6 sm:mt-12 sm:gap-8">
-          <FeatureList features={features} />
+        <FeatureList features={features} />
       </div>
 
       {!showAddForm && (
@@ -80,7 +81,7 @@ const FeatureSection = ({ features }: Props) => {
 
       {showAddForm && (
         <Modal onClose={toggleShowAddForm}>
-          {/* <AddTechForm onAddTech={handleAddTech} /> */}
+          <AddFeatureForm onAddFeature={handleAddFeature} />
         </Modal>
       )}
     </section>

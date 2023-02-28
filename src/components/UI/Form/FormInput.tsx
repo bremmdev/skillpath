@@ -6,7 +6,7 @@ type Props = React.ComponentPropsWithoutRef<"input"> & {
   error: string | undefined;
 };
 
-const TextInput = (props: Props) => {
+const FormInput = (props: Props) => {
   const { htmlName, label, error, required, ...remainingProps } = props;
 
   const requiredClassNames = required
@@ -20,7 +20,6 @@ const TextInput = (props: Props) => {
           <span className={requiredClassNames}>{label}</span>
         </label>
         <input
-          type="text"
           name={htmlName}
           placeholder=" "
           className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
@@ -40,4 +39,4 @@ const TextInput = (props: Props) => {
   );
 };
 
-export default TextInput;
+export default FormInput;

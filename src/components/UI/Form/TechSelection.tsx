@@ -1,5 +1,5 @@
 import type { Tech } from "@prisma/client";
-import Spinner from "../../UI/Spinner";
+import Spinner from "../Spinner";
 
 type Props = {
   tech: Array<Tech> | undefined;

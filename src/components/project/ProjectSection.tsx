@@ -4,7 +4,7 @@ import ProjectCard from "./ProjectCard";
 import { trpc } from "../../utils/trpc";
 import Alert from "../UI/Alert";
 import Modal from "../UI/Modal/Modal";
-import AddProjectForm from "./AddProjectForm/AddProjectForm";
+import AddProjectForm from "./AddProjectForm";
 import Image from "next/image";
 import AddIcon from "../../../public/icons/add.svg";
 

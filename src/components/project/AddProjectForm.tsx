@@ -2,11 +2,11 @@ import React from "react";
 import {
   projectInputSchema,
   type ProjectInput,
-} from "../../../schema/project.schema";
-import { trpc } from "../../../utils/trpc";
-import Spinner from "../../UI/Spinner";
-import TextInput from "../../UI/Form/TextInput";
-import TechSelection from "./TechSelection";
+} from "../../schema/project.schema";
+import { trpc } from "../../utils/trpc";
+import Spinner from "../UI/Spinner";
+import FormInput from "../UI/Form/FormInput";
+import TechSelection from "../UI/Form/TechSelection";
 
 const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
   const [errors, setErrors] = React.useState<Record<string, string>>({}); //errors for the form
@@ -78,7 +78,8 @@ const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
         onSubmit={handleSubmit}
         className="flex w-full flex-col gap-2 text-xs sm:gap-4 md:text-sm xl:text-base"
       >
-        <TextInput
+        <FormInput
+          type="text"
           htmlName="title"
           label="Title"
           minLength={2}
@@ -87,7 +88,8 @@ const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
           error={errors.title}
         />
 
-        <TextInput
+        <FormInput
+          type="text"
           htmlName="description"
           label="Description"
           minLength={10}
@@ -96,7 +98,8 @@ const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
           error={errors.description}
         />
 
-        <TextInput
+        <FormInput
+          type="text"
           htmlName="repo"
           label="Repo URL"
           title="Must be a valid url"
@@ -105,7 +108,8 @@ const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
           error={errors.repo}
         />
 
-        <TextInput
+        <FormInput
+          type="text"
           htmlName="url"
           label="Demo URL"
           title="Must be a valid url"
@@ -114,7 +118,8 @@ const AddProjectForm = ({ onAddProject }: { onAddProject: () => void }) => {
           error={errors.url}
         />
 
-        <TextInput
+        <FormInput
+          type="text"
           htmlName="imageUrl"
           label="Image URL"
           title="Must be Github image url"

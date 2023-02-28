@@ -4,7 +4,7 @@ import Image from "next/image";
 import { techInputSchema, type TechInput } from "../../schema/tech.schema";
 import { trpc } from "../../utils/trpc";
 import Spinner from "../UI/Spinner";
-import TextInput from "../UI/Form/TextInput";
+import FormInput from "../UI/Form/FormInput";
 
 const isFile = (icon: unknown): icon is File => {
   return icon instanceof File;
@@ -97,7 +97,8 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
         onSubmit={handleSubmit}
         className="flex w-full flex-col gap-2 text-xs sm:gap-4 md:text-sm xl:text-base"
       >
-        <TextInput
+        <FormInput
+          type="text"
           htmlName="name"
           label="Name"
           minLength={2}
@@ -106,7 +107,8 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
           error={errors.name}
         />
 
-        <TextInput
+        <FormInput
+          type="text" 
           htmlName="description"
           label="Description"
           minLength={10}
@@ -160,7 +162,8 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
           </div>
         )}
 
-        <TextInput
+        <FormInput
+          type="text"
           htmlName="url"
           label="URL"
           title="Must be a valid url"
@@ -176,7 +179,7 @@ const AddTechForm = ({ onAddTech }: { onAddTech: () => void }) => {
         >
           {isAdding ? (
             <span className="flex items-center gap-2">
-             <Spinner inverted={true}/>
+              <Spinner inverted={true} />
               Adding Tech...
             </span>
           ) : (
