@@ -6,10 +6,10 @@ import { trpc } from "../../utils/trpc";
 import Alert from "../UI/Alert";
 import FeatureList from "./FeatureList";
 import type { Feature, Tech } from "@prisma/client";
-import AddFeatureForm from "./AddFeatureForm";
+import FeatureForm from "./FeatureForm";
 
 type Props = {
-  features: Array<Feature & { Tech: Pick<Tech, "name"> }>;
+  features: Array<Feature & { Tech: Pick<Tech, "name" | "icon"> }>;
 };
 
 const FeatureSection = ({ features }: Props) => {
@@ -65,7 +65,11 @@ const FeatureSection = ({ features }: Props) => {
         I have recently learned these features:
       </p>
       <div className="mt-6 sm:mt-12 sm:gap-8">
-        <FeatureList features={features} />
+        <FeatureList
+          features={features}
+          isDeleting={isDeleting}
+          deleteFeatureById={deleteFeatureById}
+        />
       </div>
 
       {!showAddForm && (
@@ -81,7 +85,7 @@ const FeatureSection = ({ features }: Props) => {
 
       {showAddForm && (
         <Modal onClose={toggleShowAddForm}>
-          <AddFeatureForm onAddFeature={handleAddFeature} />
+          <FeatureForm onAddFeature={handleAddFeature} />
         </Modal>
       )}
     </section>

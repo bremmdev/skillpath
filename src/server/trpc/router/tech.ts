@@ -2,6 +2,7 @@ import { router, publicProcedure } from "../trpc";
 import { techInputSchema } from "../../../schema/tech.schema";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
 export const techRouter = router({
   findAll: publicProcedure.query(async ({ ctx }) => {
@@ -104,6 +105,17 @@ export const techRouter = router({
         if (err instanceof TRPCError) {
           throw new TRPCError(err);
         }
+
+        if (
+          err instanceof PrismaClientKnownRequestError &&
+          err.code === "P2003"
+        ) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "There are still features using this tech",
+          });
+        }
+
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Internal Server Error",

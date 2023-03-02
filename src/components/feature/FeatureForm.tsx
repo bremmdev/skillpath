@@ -6,24 +6,38 @@ import {
 import { trpc } from "../../utils/trpc";
 import Spinner from "../UI/Spinner";
 import FormInput from "../UI/Form/FormInput";
+import type { Feature } from "@prisma/client";
 
-const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
+type Props = {
+  onAddFeature: () => void;
+  feature?: Feature;
+  type?: "add" | "edit";
+};
+
+const FeatureForm = ({ onAddFeature, feature, type = "add" }: Props) => {
   const [errors, setErrors] = React.useState<Record<string, string>>({}); //errors for the form
 
   //needed for invalidating the query
   const utils = trpc.useContext();
 
-  const {
-    data: tech,
-    isLoading: techLoading,
-    error: techError,
-  } = trpc.tech.findAll.useQuery();
+  const { data: tech, error: techError } = trpc.tech.findAll.useQuery();
 
   const {
     mutate: createFeature,
     error: createFeatureError,
     isLoading: isAdding,
   } = trpc.feature.create.useMutation({
+    onSuccess: () => {
+      onAddFeature();
+      utils.feature.invalidate();
+    },
+  });
+
+  const {
+    mutate: updateFeature,
+    error: updateFeatureError,
+    isLoading: isUpdating,
+  } = trpc.feature.update.useMutation({
     onSuccess: () => {
       onAddFeature();
       utils.feature.invalidate();
@@ -47,7 +61,6 @@ const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
 
     //check if the data is valid
     const result = featureInputSchema.safeParse(input);
-    console.log(result);
     setErrors({});
     const errors: Record<string, string> = {};
 
@@ -63,13 +76,19 @@ const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
 
     if (Object.keys(errors).length > 0) return;
 
-    //if there are no errors, create the feature
+    //if there are no errors, create or the feature
+    if (type === "edit" && feature?.id) {
+      updateFeature({ id: feature.id, data: input });
+      return;
+    }
     createFeature(input);
   };
 
   const hasFormErrors = Object.keys(errors).length > 0;
   const showCreateFeatureError =
     createFeatureError && !isAdding && !hasFormErrors;
+  const showUpdateFeatureError =
+    updateFeatureError && !isUpdating && !hasFormErrors;
 
   return (
     <div className="relative mx-auto flex w-full flex-col items-center justify-center rounded-2xl bg-blue-100 p-8 text-left text-slate-900 md:p-16 2xl:px-24">
@@ -84,6 +103,7 @@ const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
           minLength={2}
           maxLength={50}
           required
+          defaultValue={feature?.title}
           error={errors.title}
         />
 
@@ -94,6 +114,7 @@ const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
           minLength={10}
           maxLength={500}
           required
+          defaultValue={feature?.description}
           error={errors.description}
         />
 
@@ -102,7 +123,9 @@ const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
           htmlName="dateLearned"
           label="Date learned"
           required
-          defaultValue={new Date().toISOString().split("T")[0]}
+          defaultValue={
+            (feature?.dateLearned ?? new Date()).toISOString().split("T")[0]
+          }
           error={errors.dateLearned}
         />
 
@@ -110,6 +133,11 @@ const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
           type="date"
           htmlName="dateReviewed"
           label="Date reviewed"
+          defaultValue={
+            feature?.dateReviewed
+              ? feature.dateReviewed.toISOString().split("T")[0]
+              : ""
+          }
           error={errors.dateReviewed}
         />
 
@@ -125,6 +153,7 @@ const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
             name="techId"
             className="w-full rounded-md border border-slate-400 px-4 py-2 outline-none focus:border-blue-500 invalid-unfocused:border-pink-600 invalid-unfocused:text-pink-600
       sm:basis-3/4"
+            defaultValue={feature?.techId}
           >
             {tech?.map((tech) => (
               <option key={tech.id} value={tech.id}>
@@ -145,15 +174,15 @@ const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
         <button
           type="submit"
           className="mx-auto mt-4 block cursor-pointer rounded-lg bg-blue-600 py-3 px-6 text-sm font-semibold text-white transition-all duration-300 hover:bg-blue-500 md:text-base"
-          disabled={isAdding}
+          disabled={isAdding || isUpdating}
         >
-          {isAdding ? (
+          {isAdding || isUpdating ? (
             <span className="flex items-center gap-2">
               <Spinner inverted={true} />
-              Adding Feature...
+              {type === "edit" ? "Updating Feature..." : "Adding Feature..."}
             </span>
           ) : (
-            "Add Feature"
+            <span>{type === "edit" ? "Update Feature" : "Add Feature"}</span>
           )}
         </button>
       </form>
@@ -162,8 +191,13 @@ const AddFeatureForm = ({ onAddFeature }: { onAddFeature: () => void }) => {
           {createFeatureError.message}
         </p>
       )}
+      {showUpdateFeatureError && (
+        <p className="mt-6 text-center text-xs font-bold text-red-500 md:text-sm xl:text-base">
+          {updateFeatureError.message}
+        </p>
+      )}
     </div>
   );
 };
 
-export default AddFeatureForm;
+export default FeatureForm;
