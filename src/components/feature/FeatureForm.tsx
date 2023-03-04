@@ -95,6 +95,7 @@ const FeatureForm = ({ onAddFeature, feature, type = "add" }: Props) => {
       <form
         onSubmit={handleSubmit}
         className="flex w-full flex-col gap-2 text-xs sm:gap-4 md:text-sm xl:text-base"
+        id="feature-form"
       >
         <FormInput
           type="text"

@@ -7,6 +7,11 @@ body {
   scroll-behavior: smooth !important;
 }
 
+/*hide the add feature button when the feature form modal is open*/
+body:has(#feature-form) [alt="add feature"] {
+  display: none;
+}
+
 /* custom scrollbar */
 ::-webkit-scrollbar {
   width: 0.5em;
