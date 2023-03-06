@@ -14,12 +14,25 @@ const Modal = ({ children, onClose }: Props) => {
 
   //only close modal if user clicks on the backdrop
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if ((e.target as HTMLDivElement).classList.contains("fixed")) onClose();
+    //only close if there is no spinner, so no updating/deleting/creating is happening
+    if (!document.querySelector(".spinner")) {
+      if ((e.target as HTMLDivElement).classList.contains("fixed")) onClose();
+    }
   };
 
   //close modal if user presses escape key
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Escape") onClose();
+    //only close if there is no spinner, so no updating/deleting/creating is happening
+    if (!document.querySelector(".spinner")) {
+      if (e.key === "Escape") onClose();
+    }
+  };
+
+  const handleCloseClick = () => {
+    //only close if there is no spinner, so no updating/deleting/creating is happening
+    if (!document.querySelector(".spinner")) {
+      onClose();
+    }
   };
 
   //autoFcous on modal when it opens, needed to be able to close it with escape key
@@ -37,14 +50,14 @@ const Modal = ({ children, onClose }: Props) => {
     >
       <div
         ref={childRef}
-        className={`absolute mx-auto w-4/5 animate-fadeIn lg:w-2/3 small-height:max-h-[85%] small-height:overflow-y-auto`}
+        className={`absolute mx-auto w-4/5 animate-fadeIn small-height:max-h-[85%] small-height:overflow-y-auto lg:w-2/3`}
       >
-          <Image
-            src={Close}
-            alt="close icon"
-            className="absolute -bottom-16 left-1/2 h-16 w-16 -translate-x-8 cursor-pointer p-2 opacity-80 hover:opacity-100 small-height:hidden"
-            onClick={onClose}
-          />
+        <Image
+          src={Close}
+          alt="close icon"
+          className="absolute -bottom-16 left-1/2 h-16 w-16 -translate-x-8 cursor-pointer p-2 opacity-80 hover:opacity-100 small-height:hidden"
+          onClick={handleCloseClick}
+        />
         {children}
       </div>
     </div>
