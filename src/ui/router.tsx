@@ -1,8 +1,9 @@
-import { createRouter as createTanStackRouter } from '@tanstack/react-router'
+import { createHashHistory, createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 
 export function getRouter() {
   const router = createTanStackRouter({
+    history: createHashHistory(),
     routeTree,
     scrollRestoration: true,
     defaultPreload: 'intent',
