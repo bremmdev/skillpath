@@ -2,16 +2,18 @@
   "name": "skillpath",
   "private": true,
   "type": "module",
-  "main": "src/electron/main.js",
+  "main": "dist-electron/main.js",
   "imports": {
     "#/*": "./src/*"
   },
   "scripts": {
     "dev": "concurrently -k -n vite,electron -c blue,green \"npm:dev:ui\" \"npm:dev:electron\"",
     "dev:ui": "vite dev --port 3000 --strictPort",
-    "dev:electron": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
+    "dev:electron": "tsc -p src/electron/tsconfig.json && wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
+    "typecheck": "tsc -p tsconfig.json",
+    "build:electron": "tsc -p src/electron/tsconfig.json",
     "generate-routes": "tsr generate",
-    "build": "vite build",
+    "build": "npm run typecheck && vite build && npm run build:electron",
     "preview": "vite preview",
     "test": "vitest run",
     "format": "biome format",

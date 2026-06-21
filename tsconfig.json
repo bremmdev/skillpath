@@ -1,5 +1,6 @@
 {
-  "include": ["**/*.ts", "**/*.tsx", "src/electron/main.js"],
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["src/electron/**/*"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",
