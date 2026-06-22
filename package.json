@@ -1,5 +1,13 @@
 {
   "name": "skillpath",
+  "version": "0.0.1",
+  "description": "Personal knowledge and skill-mapping",
+  "author": "bremmdev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bremmdev/skillpath"
+  },
   "private": true,
   "type": "module",
   "main": "dist-electron/main.js",
@@ -14,6 +22,9 @@
     "build:electron": "tsc -p src/electron/tsconfig.json",
     "generate-routes": "tsr generate",
     "build": "npm run typecheck && vite build && npm run build:electron",
+    "app:dir": "npm run build && electron-builder --dir",
+    "app:build": "npm run build && electron-builder",
+    "app:build:win": "npm run build && electron-builder --win",
     "preview": "vite preview",
     "test": "vitest run",
     "format": "biome format",
@@ -46,6 +57,7 @@
     "concurrently": "^10.0.3",
     "cross-env": "^10.1.0",
     "electron": "^42.4.1",
+    "electron-builder": "^26.15.3",
     "jsdom": "^28.1.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",

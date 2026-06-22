@@ -1,0 +1,11 @@
+{
+    "appId": "com.bremmdev.skillpath",
+    "productName": "Skillpath",
+    "icon": "src/assets/icon.png",
+    "files": [
+        "dist-electron", "dist-ui"
+    ],
+    "win": {
+        "target": ["portable", "msi"]
+    }
+}
