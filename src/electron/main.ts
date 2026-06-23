@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
+import { getDatabase } from "./db/index.js";
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -18,5 +19,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Open the database and run migrations before showing the window
+  getDatabase();
   createWindow();
 });
