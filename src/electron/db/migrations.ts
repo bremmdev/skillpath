@@ -23,6 +23,10 @@
  *       - every technology should reach a category: directly via technology_category, or transitively through a parent
  *       - every concept should have at least one link (a technology or a category)
  *     The DB only guarantees which links are *valid* (foreign keys) and that a concept never links to both (triggers).
+ *  8. The concept_status_event table is used to track the history of concept status changes, which is used to answer the time-based questions
+ *     ("learned recently", "improving areas", "profile over time").
+ *     The initial status is recorded at creation (old_status NULL).
+ *     Every real status change is recorded.
  */
 
 export interface Migration {
@@ -97,6 +101,16 @@ export const migrations: Migration[] = [
       );
       CREATE INDEX idx_concept_category_category ON concept_category (category_id);
 
+      CREATE TABLE concept_status_event (
+        id INTEGER PRIMARY KEY,
+        concept_id INTEGER NOT NULL REFERENCES concept(id) ON DELETE CASCADE,
+        old_status TEXT,
+        new_status TEXT NOT NULL,
+        changed_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+      );
+      CREATE INDEX idx_concept_status_event_concept ON concept_status_event (concept_id);
+      CREATE INDEX idx_concept_status_event_changed ON concept_status_event (changed_at);
+
       CREATE TRIGGER trg_concept_technology_excl_category
       BEFORE INSERT ON concept_technology
       FOR EACH ROW
@@ -127,6 +141,25 @@ export const migrations: Migration[] = [
       WHEN EXISTS (SELECT 1 FROM concept_technology WHERE concept_id = NEW.concept_id)
       BEGIN
         SELECT RAISE(ABORT, 'concept has a technology link; cannot also link directly to a category');
+      END;
+
+      -- Record the initial status when a concept is created (old_status NULL).
+      CREATE TRIGGER trg_concept_status_event_insert
+      AFTER INSERT ON concept
+      FOR EACH ROW
+      BEGIN
+        INSERT INTO concept_status_event (concept_id, old_status, new_status)
+        VALUES (NEW.id, NULL, NEW.status);
+      END;
+
+      -- Record every real status change.
+      CREATE TRIGGER trg_concept_status_event_update
+      AFTER UPDATE OF status ON concept
+      FOR EACH ROW
+      WHEN NEW.status <> OLD.status
+      BEGIN
+        INSERT INTO concept_status_event (concept_id, old_status, new_status)
+        VALUES (NEW.id, OLD.status, NEW.status);
       END;
 
       CREATE TRIGGER trg_category_updated_at
