@@ -2,6 +2,7 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { app } from "electron";
 import { migrations } from "./migrations.js";
+import fs from "node:fs";
 
 let db: DatabaseSync | undefined;
 
@@ -15,22 +16,49 @@ let db: DatabaseSync | undefined;
 export function getDatabase(): DatabaseSync {
   if (db) return db;
 
-  const dbPath = path.join(app.getPath("userData"), "skillpath.db");
-  const sqlite = new DatabaseSync(dbPath);
+  if (!app.isReady()) {
+    throw new Error("getDatabase() must be called after Electron app is ready");
+  }
 
-  sqlite.exec(`
-    PRAGMA journal_mode = WAL;
-    PRAGMA foreign_keys = ON;
-    PRAGMA synchronous = NORMAL;
-    PRAGMA temp_store = MEMORY;
-    PRAGMA cache_size = 2000;
-    PRAGMA busy_timeout = 5000;
-  `);
+  const dbDir = path.join(app.getPath("userData"), "database");
 
-  runMigrations(sqlite);
+  // Ensure the database directory exists
+  fs.mkdirSync(dbDir, { recursive: true });
 
-  db = sqlite;
-  return db;
+  const dbPath = path.join(dbDir, "skillpath.db");
+
+  const sqlite = new DatabaseSync(dbPath, {
+    enableForeignKeyConstraints: true,
+    timeout: 5000, // busy timeout,
+  });
+
+  try {
+    sqlite.exec(`
+      PRAGMA journal_mode = WAL;
+      PRAGMA synchronous = NORMAL;
+      PRAGMA temp_store = MEMORY;
+      PRAGMA cache_size = -8000;
+    `);
+
+    runMigrations(sqlite);
+
+    db = sqlite;
+    return db;
+  } catch (error) {
+    sqlite.close();
+    throw error;
+  }
+}
+
+export function closeDatabase(): void {
+  if (!db) {
+    return;
+  }
+
+  db.exec("PRAGMA wal_checkpoint(TRUNCATE);");
+  db.exec("PRAGMA optimize;");
+  db.close();
+  db = undefined;
 }
 
 /**

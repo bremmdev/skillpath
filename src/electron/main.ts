@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
-import { getDatabase } from "./db/index.js";
+import { getDatabase, closeDatabase } from "./db/index.js";
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -22,4 +22,8 @@ app.whenReady().then(() => {
   // Open the database and run migrations before showing the window
   getDatabase();
   createWindow();
+});
+
+app.on("before-quit", () => {
+  closeDatabase();
 });
