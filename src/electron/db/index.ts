@@ -2,6 +2,7 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { app } from "electron";
 import { migrations } from "./migrations.js";
+import { validateMigrations } from "./validate.js";
 import fs from "node:fs";
 
 let db: DatabaseSync | undefined;
@@ -67,18 +68,26 @@ export function closeDatabase(): void {
  * goes so every migration runs exactly once.
  */
 function runMigrations(sqlite: DatabaseSync): void {
-  const row = sqlite.prepare("PRAGMA user_version").get();
-  const currentVersion = Number(row?.user_version ?? 0);
+  // Fail fast on a malformed migration list before touching the database.
+  validateMigrations(migrations);
+
+  const row = sqlite.prepare("PRAGMA user_version").get() as
+    | { user_version: number }
+    | undefined;
+
+  let currentVersion = Number(row?.user_version ?? 0);
 
   for (const migration of migrations) {
     if (migration.version <= currentVersion) continue;
 
-    sqlite.exec("BEGIN");
+    sqlite.exec("BEGIN IMMEDIATE;");
     try {
       sqlite.exec(migration.sql);
       // user_version only accepts a literal, not a bound parameter.
       sqlite.exec(`PRAGMA user_version = ${migration.version}`);
       sqlite.exec("COMMIT");
+
+      currentVersion = migration.version;
     } catch (error) {
       sqlite.exec("ROLLBACK");
       throw new Error(
