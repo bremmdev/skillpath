@@ -1,52 +1,102 @@
 // Row types for the SQLite tables. Hand-written (no ORM); keep these in sync
 // with the DDL in ./migrations.ts. Field names match the snake_case columns.
+//
+// A "thing" is either a category or a technology (separate tables). Concepts are
+// the things you've actually learned. Categories/technologies, technologies/parent
+// technologies, and concepts/technologies-or-categories are linked via junction
+// tables. concept_status_event tracks the history of concept status changes.
 
-export type KnowledgeNodeType = "category" | "technology" | "concept";
+export type ConceptStatus = "learned" | "learning" | "mastered" | "discovered";
 
-export type KnowledgeStatus =
-  | "learned"
-  | "learning"
-  | "comfortable"
-  | "mastered"
-  | "discovered"
-  | "needs_review";
-
-export type RelationshipType = "parent_of" | "related_to" | "prerequisite_for";
-
-export interface KnowledgeNode {
+export type Category = {
   id: number;
-  type: KnowledgeNodeType;
   name: string;
   slug: string;
   description: string | null;
-  status: KnowledgeStatus;
   importance: number;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface NewKnowledgeNode {
-  type: KnowledgeNodeType;
+// id/created_at/updated_at are DB-generated; description/importance have defaults.
+export type NewCategory = Omit<
+  Category,
+  "id" | "created_at" | "updated_at" | "description" | "importance"
+> &
+  Partial<Pick<Category, "description" | "importance">>;
+
+export type Technology = {
+  id: number;
   name: string;
   slug: string;
-  description?: string | null;
-  status?: KnowledgeStatus;
-  importance?: number;
-}
-
-export interface KnowledgeRelationship {
-  id: number;
-  source_node_id: number;
-  target_node_id: number;
-  relationship_type: RelationshipType;
-  notes: string | null;
+  description: string | null;
+  parent_technology_id: number | null;
+  importance: number;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface NewKnowledgeRelationship {
-  source_node_id: number;
-  target_node_id: number;
-  relationship_type: RelationshipType;
-  notes?: string | null;
-}
+export type NewTechnology = Omit<
+  Technology,
+  | "id"
+  | "created_at"
+  | "updated_at"
+  | "description"
+  | "parent_technology_id"
+  | "importance"
+> &
+  Partial<
+    Pick<Technology, "description" | "parent_technology_id" | "importance">
+  >;
+
+export type Concept = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  status: ConceptStatus;
+  importance: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type NewConcept = Omit<
+  Concept,
+  "id" | "created_at" | "updated_at" | "description" | "status" | "importance"
+> &
+  Partial<Pick<Concept, "description" | "status" | "importance">>;
+
+// --- junction tables --------------------------------------------------------
+
+export type TechnologyCategory = {
+  technology_id: number;
+  category_id: number;
+};
+
+export type ConceptTechnology = {
+  concept_id: number;
+  technology_id: number;
+};
+
+export type ConceptCategory = {
+  concept_id: number;
+  category_id: number;
+};
+
+export type ConceptStatusEvent = {
+  id: number;
+  concept_id: number;
+  // NULL when the row records the initial status at concept creation.
+  old_status: ConceptStatus | null;
+  new_status: ConceptStatus;
+  changed_at: string;
+};
+
+// Rows are written automatically by the concept status triggers
+// (trg_concept_status_event_insert / _update), not inserted by hand. Kept for
+// completeness / read typing.
+export type NewConceptStatusEvent = Omit<
+  ConceptStatusEvent,
+  "id" | "changed_at" | "old_status"
+> &
+  Partial<Pick<ConceptStatusEvent, "old_status">>;
