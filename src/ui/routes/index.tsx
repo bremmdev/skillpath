@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-
 import { GreetingHeader } from "@/ui/components/dashboard/greeting-header";
 import { ImprovingAreas } from "@/ui/components/dashboard/improving-areas";
 import { KnowledgeMap } from "@/ui/components/dashboard/knowledge-map";
@@ -8,7 +7,13 @@ import { SkillProfile } from "@/ui/components/dashboard/skill-profile";
 import { StatsOverview } from "@/ui/components/dashboard/stats-overview";
 import { TopNav } from "@/ui/components/dashboard/top-nav";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+	loader: ({ context: { queryClient } }) => {
+// queryClient.ensureQueryData(postsQueryOptions)
+		return []
+	},
+	component: Home,
+});
 
 function Home() {
 	return (
