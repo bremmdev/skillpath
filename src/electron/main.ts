@@ -2,6 +2,7 @@ import { app, BrowserWindow } from "electron";
 import path from "path";
 import { getDatabase, closeDatabase } from "./db/index.js";
 import { screen } from "electron";
+import { registerIpcHandlers } from "./ipc.js";
 
 function createWindow() {
   const cursorPoint = screen.getCursorScreenPoint();
@@ -14,7 +15,16 @@ function createWindow() {
     width,
     height,
     webPreferences: {
-      nodeIntegration: true,
+      // preload is authored as .cts so it compiles to CommonJS (preload.cjs).
+      // Sandboxed preload scripts can't be ESM, even though main.js is ESM.
+      preload: path.join(app.getAppPath(), "dist-electron", "preload.cjs"),
+      // These match Electron's secure defaults; set explicitly so intent is
+      // documented and a future dependency/version change can't silently
+      // weaken them. Node stays in the main process; the renderer only gets
+      // the contextBridge api surface.
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
     },
   });
 
@@ -35,6 +45,7 @@ function createWindow() {
 app.whenReady().then(() => {
   // Open the database and run migrations before showing the window
   getDatabase();
+  registerIpcHandlers();
   createWindow();
 });
 

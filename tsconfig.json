@@ -1,5 +1,8 @@
 {
   "include": ["**/*.ts", "**/*.tsx"],
+  // The renderer's Window augmentation lives under src/electron but is consumed
+  // by the UI, so pull it in explicitly (files bypasses the exclude below).
+  "files": ["src/electron/renderer/global.d.ts"],
   "exclude": ["src/electron/**/*"],
   "compilerOptions": {
     "target": "ES2022",

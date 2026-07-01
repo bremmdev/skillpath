@@ -2,8 +2,15 @@
     "compilerOptions": {
         "module": "NodeNext",
         "target": "ESNext",
+        "rootDir": ".",
         "outDir": "../../dist-electron",
         "strict": true,
         "skipLibCheck": true
-    }
+    },
+    // Compile the whole main-process tree (main, db, utils) plus the .cts
+    // preload. rootDir above keeps the output flat: main.ts -> main.js and
+    // preload.cts -> preload.cjs (CommonJS, required for a sandboxed preload).
+    // renderer/ holds a UI-only Window augmentation owned by the root tsconfig.
+    "include": ["**/*.ts", "**/*.cts"],
+    "exclude": ["renderer"]
 }
