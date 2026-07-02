@@ -6,7 +6,6 @@ import { KnowledgeMap } from "@/ui/components/dashboard/knowledge-map";
 import { RecentlyLearned } from "@/ui/components/dashboard/recently-learned";
 import { SkillProfile } from "@/ui/components/dashboard/skill-profile";
 import { StatsOverview } from "@/ui/components/dashboard/stats-overview";
-import { TopNav } from "@/ui/components/dashboard/top-nav";
 import { categoriesQueryOptions } from "@/ui/lib/query";
 
 export const Route = createFileRoute("/")({
@@ -37,9 +36,7 @@ function Home() {
 	console.log(categories);
 
 	return (
-		<div className="bg-background min-h-screen">
-			<TopNav />
-			<main className="flex w-full flex-col gap-6 px-6 py-8">
+		<>
 				<GreetingHeader />
 				<StatsOverview />
 
@@ -52,7 +49,6 @@ function Home() {
 					<KnowledgeMap />
 					<ImprovingAreas />
 				</section>
-			</main>
-		</div>
+		</>
 	);
 }

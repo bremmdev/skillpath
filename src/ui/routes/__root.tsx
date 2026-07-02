@@ -5,34 +5,40 @@ import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
 import "../styles.css";
+import { TopNav } from "../components/dashboard/top-nav";
 
 export interface RouterContext {
-	queryClient: QueryClient;
+  queryClient: QueryClient;
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-	component: RootComponent,
+  component: RootComponent,
 });
 
 function RootComponent() {
-	return (
-		<>
-			<Outlet />
-			<TanStackDevtools
-				config={{
-					position: "bottom-right",
-				}}
-				plugins={[
-					{
-						name: "TanStack Router",
-						render: <TanStackRouterDevtoolsPanel />,
-					},
-					{
-						name: "TanStack Query",
-						render: <ReactQueryDevtoolsPanel />,
-					},
-				]}
-			/>
-		</>
-	);
+  return (
+    <>
+      <TopNav />
+	  <div className="bg-background min-h-screen">
+			<main className="flex w-full flex-col gap-6 px-6 py-8">
+      <Outlet />
+	  </main>
+	  </div>
+      <TanStackDevtools
+        config={{
+          position: "bottom-right",
+        }}
+        plugins={[
+          {
+            name: "TanStack Router",
+            render: <TanStackRouterDevtoolsPanel />,
+          },
+          {
+            name: "TanStack Query",
+            render: <ReactQueryDevtoolsPanel />,
+          },
+        ]}
+      />
+    </>
+  );
 }

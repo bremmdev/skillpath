@@ -1,16 +1,22 @@
+import { Link } from "@tanstack/react-router";
 import { Plus, Search } from "lucide-react";
-
 import { Button } from "@/ui/components/ui/button";
 import { Input } from "@/ui/components/ui/input";
-import { navItems } from "@/ui/data/dashboard";
 import { cn } from "@/ui/lib/utils";
+
+const navItems = [
+	{ label: "Home", to: "/" },
+	{ label: "Skill map", to: "/skill-map" },
+	{ label: "Browse", to: "/browse" },
+	{ label: "Insights", to: "/insights" },
+];
 
 export function TopNav() {
 	return (
 		<header className="bg-background sticky top-0 z-30 border-b">
 			<div className="flex h-16 w-full items-center gap-6 px-6">
 				<div className="flex items-center gap-2.5">
-					<span className="bg-rose-500 text-primary-foreground flex size-7 items-center justify-center rounded-md text-sm font-bold">
+					<span className="bg-brand text-brand-foreground flex size-7 items-center justify-center rounded-md text-sm font-bold">
 						S
 					</span>
 					<span className="text-[15px] font-semibold tracking-tight">
@@ -20,18 +26,20 @@ export function TopNav() {
 
 				<nav className="flex items-center gap-1">
 					{navItems.map((item) => (
-						<button
+						<Link
 							key={item.label}
-							type="button"
+							to={item.to}
+							// "/" prefix-matches every path, so require an exact match for it;
+							// other routes stay active for their nested paths.
+							activeOptions={{ exact: item.to === "/" }}
 							className={cn(
 								"rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-								item.active
-									? "text-foreground"
-									: "text-muted-foreground hover:text-foreground",
+								"text-muted-foreground hover:text-foreground",
+								"data-[status=active]:text-brand font-semibold",
 							)}
 						>
 							{item.label}
-						</button>
+						</Link>
 					))}
 				</nav>
 

@@ -1,0 +1,170 @@
+import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
+
+import { SkillTree } from "@/ui/components/browse/skill-tree";
+import { Button } from "@/ui/components/ui/button";
+import { Card, CardContent } from "@/ui/components/ui/card";
+import { Input } from "@/ui/components/ui/input";
+import type { BrowseFilters } from "@/ui/data/browse";
+import {
+	type ConceptStatus,
+	conceptStatuses,
+	filterTree,
+	hasActiveFilters,
+	skillTree,
+	statusMeta,
+} from "@/ui/data/browse";
+import { cn } from "@/ui/lib/utils";
+
+const importanceLevels = [
+	{ label: "All", value: 1 },
+	{ label: "2+", value: 2 },
+	{ label: "3+", value: 3 },
+	{ label: "4+", value: 4 },
+	{ label: "5", value: 5 },
+];
+
+function Chip({
+	active,
+	onClick,
+	children,
+}: {
+	active: boolean;
+	onClick: () => void;
+	children: React.ReactNode;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className={cn(
+				"border px-2.5 py-1 text-xs font-medium transition-colors",
+				active
+					? "border-foreground bg-foreground text-background"
+					: "border-border text-muted-foreground hover:text-foreground",
+			)}
+		>
+			{children}
+		</button>
+	);
+}
+
+function FilterGroup({
+	label,
+	children,
+}: {
+	label: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<div className="flex items-center gap-1.5">
+			<span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+				{label}
+			</span>
+			{children}
+		</div>
+	);
+}
+
+export function BrowseExplorer() {
+	const [query, setQuery] = useState("");
+	const [statuses, setStatuses] = useState<ConceptStatus[]>([]);
+	const [minImportance, setMinImportance] = useState(1);
+	// Categories start expanded; the set only tracks manual toggles.
+	const [expanded, setExpanded] = useState<Set<string>>(
+		() => new Set(skillTree.map((category) => category.id)),
+	);
+
+	const filters: BrowseFilters = { query, statuses, minImportance };
+	const filtered = useMemo(
+		() => filterTree(skillTree, { query, statuses, minImportance }),
+		[query, statuses, minImportance],
+	);
+	const active = hasActiveFilters(filters);
+
+	// While filtering, force every branch open so matches are always visible.
+	const isOpen = (id: string) => active || expanded.has(id);
+	const toggle = (id: string) =>
+		setExpanded((prev) => {
+			const next = new Set(prev);
+			if (next.has(id)) {
+				next.delete(id);
+			} else {
+				next.add(id);
+			}
+			return next;
+		});
+
+	const toggleStatus = (status: ConceptStatus) =>
+		setStatuses((prev) =>
+			prev.includes(status)
+				? prev.filter((s) => s !== status)
+				: [...prev, status],
+		);
+
+	const clear = () => {
+		setQuery("");
+		setStatuses([]);
+		setMinImportance(1);
+	};
+
+	return (
+		<div className="flex flex-col gap-4">
+			<div className="flex flex-col gap-3">
+				<div className="relative w-full max-w-sm">
+					<Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-0 size-4 -translate-y-1/2" />
+					<Input
+						type="search"
+						value={query}
+						onChange={(event) => setQuery(event.target.value)}
+						placeholder="Filter concepts, technologies, categories…"
+						className="pl-6"
+						aria-label="Filter"
+					/>
+				</div>
+
+				<div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+					<FilterGroup label="Status">
+						{conceptStatuses.map((status) => (
+							<Chip
+								key={status}
+								active={statuses.includes(status)}
+								onClick={() => toggleStatus(status)}
+							>
+								{statusMeta[status].label}
+							</Chip>
+						))}
+					</FilterGroup>
+
+					<FilterGroup label="Importance">
+						{importanceLevels.map((level) => (
+							<Chip
+								key={level.value}
+								active={minImportance === level.value}
+								onClick={() => setMinImportance(level.value)}
+							>
+								{level.label}
+							</Chip>
+						))}
+					</FilterGroup>
+
+					{active && (
+						<Button variant="ghost" size="xs" onClick={clear}>
+							Clear
+						</Button>
+					)}
+				</div>
+			</div>
+
+			{filtered.length > 0 ? (
+				<SkillTree tree={filtered} isOpen={isOpen} toggle={toggle} />
+			) : (
+				<Card>
+					<CardContent className="text-muted-foreground py-16 text-center text-sm">
+						No concepts match your filters.
+					</CardContent>
+				</Card>
+			)}
+		</div>
+	);
+}

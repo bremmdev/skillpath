@@ -6,12 +6,6 @@
  * the component layer keeps consuming the same shapes.
  */
 
-export type NavItem = {
-  label: string;
-  to: string;
-  active?: boolean;
-};
-
 export type User = {
   name: string;
   initials: string;
@@ -50,13 +44,6 @@ export type ImprovingArea = {
   strength: number;
   delta: number;
 };
-
-export const navItems: NavItem[] = [
-  { label: "Home", to: "/", active: true },
-  { label: "Skill map", to: "/skill-map" },
-  { label: "Browse", to: "/browse" },
-  { label: "Insights", to: "/insights" },
-];
 
 export const currentUser: User = {
   name: "Alex",
