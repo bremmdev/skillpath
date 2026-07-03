@@ -44,8 +44,6 @@ export const migrations: Migration[] = [
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
         slug TEXT NOT NULL,
-        description TEXT,
-        importance INTEGER NOT NULL DEFAULT 3 CHECK (importance BETWEEN 1 AND 5),
         created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
         updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
         UNIQUE (slug),
