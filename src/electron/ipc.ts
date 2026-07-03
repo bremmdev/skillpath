@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getCategories } from "./db/db-query.js";
+import { getCategories, getSkillTree } from "./db/db-query.js";
 
 // The app's IPC contract, in one place. Each ipcMain.handle here should have a
 // matching bridge method in preload.cts and a matching type in
@@ -8,4 +8,5 @@ import { getCategories } from "./db/db-query.js";
 // Query). Call this once from main.ts after the app is ready.
 export function registerIpcHandlers() {
   ipcMain.handle("categories:get", () => getCategories());
+  ipcMain.handle("skillTree:get", () => getSkillTree());
 }

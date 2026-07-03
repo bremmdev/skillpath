@@ -100,3 +100,38 @@ export type NewConceptStatusEvent = Omit<
   "id" | "changed_at" | "old_status"
 > &
   Partial<Pick<ConceptStatusEvent, "old_status">>;
+
+// --- composite query shapes -------------------------------------------------
+
+// The category → technology (nested) → concept tree assembled by
+// getSkillTree() for the /browse explorer. `id` is a namespaced string
+// ("cat-1", "tech-3", "concept-8") because category and technology rows share
+// the same integer id space across their tables; namespacing keeps them unique
+// as React keys and as expand/collapse handles in the tree UI.
+
+export type SkillTreeConcept = {
+  id: string;
+  name: string;
+  slug: string;
+  status: ConceptStatus;
+  importance: number;
+};
+
+export type SkillTreeTechnology = {
+  id: string;
+  name: string;
+  slug: string;
+  importance: number;
+  concepts: SkillTreeConcept[];
+  /** Nested technologies (e.g. Azure → Azure Functions). Absent when none. */
+  children?: SkillTreeTechnology[];
+};
+
+export type SkillTreeCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  technologies: SkillTreeTechnology[];
+  /** Concepts linked directly to the category (the schema's fallback path). */
+  concepts: SkillTreeConcept[];
+};

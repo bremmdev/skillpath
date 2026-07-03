@@ -25,7 +25,7 @@
     "app:dir": "npm run build && electron-builder --dir",
     "app:build": "npm run build && electron-builder",
     "app:build:win": "npm run build && electron-builder --win",
-    "seed:database": "tsx src/electron/db/seed.ts",
+    "seed:database": "tsx src/electron/db/seed/seed.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "format": "biome format",

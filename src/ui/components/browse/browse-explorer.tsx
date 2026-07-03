@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -11,9 +12,9 @@ import {
 	conceptStatuses,
 	filterTree,
 	hasActiveFilters,
-	skillTree,
 	statusMeta,
 } from "@/ui/data/browse";
+import { skillTreeQueryOptions } from "@/ui/lib/query";
 import { cn } from "@/ui/lib/utils";
 
 const importanceLevels = [
@@ -67,6 +68,9 @@ function FilterGroup({
 }
 
 export function BrowseExplorer() {
+	// The route loader primes this query, so the data is here on first render.
+	const { data: skillTree } = useSuspenseQuery(skillTreeQueryOptions);
+
 	const [query, setQuery] = useState("");
 	const [statuses, setStatuses] = useState<ConceptStatus[]>([]);
 	const [minImportance, setMinImportance] = useState(1);

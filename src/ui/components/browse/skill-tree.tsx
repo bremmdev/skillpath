@@ -150,7 +150,6 @@ function CategoryNode({
 				<Badge variant="secondary" className="font-normal">
 					{countConcepts(category)} concepts
 				</Badge>
-				<ImportanceDots value={category.importance} />
 			</button>
 			{open && (
 				<div className="pb-1">
@@ -180,7 +179,7 @@ export function SkillTree({
 } & NodeControls) {
 	const controls: NodeControls = { isOpen, toggle };
 	return (
-		<Card className="py-0">
+		<Card className="gap-0 py-0">
 			{tree.map((category) => (
 				<CategoryNode
 					key={category.id}
