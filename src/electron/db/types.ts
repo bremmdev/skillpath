@@ -6,100 +6,116 @@
 // technologies, and concepts/technologies-or-categories are linked via junction
 // tables. concept_status_event tracks the history of concept status changes.
 
-export type ConceptStatus = "learned" | "learning" | "mastered" | "discovered";
+export type ConceptStatus = "learned" | "learning" | "discovered";
 
 export type Category = {
-  id: number;
-  name: string;
-  slug: string;
-  description: string | null;
-  importance: number;
-  created_at: string;
-  updated_at: string;
+	id: number;
+	name: string;
+	slug: string;
+	description: string | null;
+	importance: number;
+	created_at: string;
+	updated_at: string;
 };
 
 // id/created_at/updated_at are DB-generated; description/importance have defaults.
 export type NewCategory = Omit<
-  Category,
-  "id" | "created_at" | "updated_at" | "description" | "importance"
+	Category,
+	"id" | "created_at" | "updated_at" | "description" | "importance"
 > &
-  Partial<Pick<Category, "description" | "importance">>;
+	Partial<Pick<Category, "description" | "importance">>;
 
 export type Technology = {
-  id: number;
-  name: string;
-  slug: string;
-  description: string | null;
-  parent_technology_id: number | null;
-  importance: number;
-  created_at: string;
-  updated_at: string;
+	id: number;
+	name: string;
+	slug: string;
+	description: string | null;
+	parent_technology_id: number | null;
+	importance: number;
+	created_at: string;
+	updated_at: string;
 };
 
 export type NewTechnology = Omit<
-  Technology,
-  | "id"
-  | "created_at"
-  | "updated_at"
-  | "description"
-  | "parent_technology_id"
-  | "importance"
+	Technology,
+	| "id"
+	| "created_at"
+	| "updated_at"
+	| "description"
+	| "parent_technology_id"
+	| "importance"
 > &
-  Partial<
-    Pick<Technology, "description" | "parent_technology_id" | "importance">
-  >;
+	Partial<
+		Pick<Technology, "description" | "parent_technology_id" | "importance">
+	>;
 
 export type Concept = {
-  id: number;
-  name: string;
-  slug: string;
-  description: string | null;
-  status: ConceptStatus;
-  importance: number;
-  created_at: string;
-  updated_at: string;
+	id: number;
+	name: string;
+	slug: string;
+	description: string | null;
+	status: ConceptStatus;
+	importance: number;
+	created_at: string;
+	updated_at: string;
 };
 
 export type NewConcept = Omit<
-  Concept,
-  "id" | "created_at" | "updated_at" | "description" | "status" | "importance"
+	Concept,
+	"id" | "created_at" | "updated_at" | "description" | "status" | "importance"
 > &
-  Partial<Pick<Concept, "description" | "status" | "importance">>;
+	Partial<Pick<Concept, "description" | "status" | "importance">>;
+
+// Input for createConcept() (see ./db-mutate.ts). The link is required because
+// the "every concept has at least one link" rule lives in the service layer,
+// not the DDL (schema rule 7 in ./migrations.ts); it is singular because a
+// concept links to exactly one technology or category (rule 5, DB triggers).
+export type ConceptLink =
+	| { type: "technology"; id: number }
+	| { type: "category"; id: number };
+
+export type CreateConceptInput = {
+	name: string;
+	description?: string | null;
+	status?: ConceptStatus;
+	importance?: number;
+	link: ConceptLink;
+};
 
 // --- junction tables --------------------------------------------------------
 
 export type TechnologyCategory = {
-  technology_id: number;
-  category_id: number;
+	technology_id: number;
+	category_id: number;
 };
 
 export type ConceptTechnology = {
-  concept_id: number;
-  technology_id: number;
+	concept_id: number;
+	technology_id: number;
 };
 
 export type ConceptCategory = {
-  concept_id: number;
-  category_id: number;
+	concept_id: number;
+	category_id: number;
 };
 
 export type ConceptStatusEvent = {
-  id: number;
-  concept_id: number;
-  // NULL when the row records the initial status at concept creation.
-  old_status: ConceptStatus | null;
-  new_status: ConceptStatus;
-  changed_at: string;
+	id: number;
+	concept_id: number;
+	// NULL when the row records the initial status at concept creation.
+	old_status: ConceptStatus | null;
+	new_status: ConceptStatus;
+	changed_at: string;
 };
 
 // Rows are written automatically by the concept status triggers
 // (trg_concept_status_event_insert / _update), not inserted by hand. Kept for
 // completeness / read typing.
 export type NewConceptStatusEvent = Omit<
-  ConceptStatusEvent,
-  "id" | "changed_at" | "old_status"
+	ConceptStatusEvent,
+	"id" | "changed_at" | "old_status"
 > &
-  Partial<Pick<ConceptStatusEvent, "old_status">>;
+	Partial<Pick<ConceptStatusEvent, "old_status">>;
 
 // --- composite query shapes -------------------------------------------------
 
@@ -110,28 +126,30 @@ export type NewConceptStatusEvent = Omit<
 // as React keys and as expand/collapse handles in the tree UI.
 
 export type SkillTreeConcept = {
-  id: string;
-  name: string;
-  slug: string;
-  status: ConceptStatus;
-  importance: number;
+	id: string;
+	name: string;
+	slug: string;
+	description: string | null;
+	status: ConceptStatus;
+	importance: number;
 };
 
 export type SkillTreeTechnology = {
-  id: string;
-  name: string;
-  slug: string;
-  importance: number;
-  concepts: SkillTreeConcept[];
-  /** Nested technologies (e.g. Azure → Azure Functions). Absent when none. */
-  children?: SkillTreeTechnology[];
+	id: string;
+	name: string;
+	slug: string;
+	description: string | null;
+	importance: number;
+	concepts: SkillTreeConcept[];
+	/** Nested technologies (e.g. Azure → Azure Functions). Absent when none. */
+	children?: SkillTreeTechnology[];
 };
 
 export type SkillTreeCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  technologies: SkillTreeTechnology[];
-  /** Concepts linked directly to the category (the schema's fallback path). */
-  concepts: SkillTreeConcept[];
+	id: string;
+	name: string;
+	slug: string;
+	technologies: SkillTreeTechnology[];
+	/** Concepts linked directly to the category (the schema's fallback path). */
+	concepts: SkillTreeConcept[];
 };

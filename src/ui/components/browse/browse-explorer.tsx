@@ -9,6 +9,7 @@ import { Input } from "@/ui/components/ui/input";
 import type { BrowseFilters } from "@/ui/data/browse";
 import {
 	type ConceptStatus,
+	conceptImportances,
 	conceptStatuses,
 	filterTree,
 	hasActiveFilters,
@@ -16,14 +17,6 @@ import {
 } from "@/ui/data/browse";
 import { skillTreeQueryOptions } from "@/ui/lib/query";
 import { cn } from "@/ui/lib/utils";
-
-const importanceLevels = [
-	{ label: "All", value: 1 },
-	{ label: "2+", value: 2 },
-	{ label: "3+", value: 3 },
-	{ label: "4+", value: 4 },
-	{ label: "5", value: 5 },
-];
 
 function Chip({
 	active,
@@ -73,16 +66,16 @@ export function BrowseExplorer() {
 
 	const [query, setQuery] = useState("");
 	const [statuses, setStatuses] = useState<ConceptStatus[]>([]);
-	const [minImportance, setMinImportance] = useState(1);
+	const [importances, setImportances] = useState<number[]>([]);
 	// Categories start expanded; the set only tracks manual toggles.
 	const [expanded, setExpanded] = useState<Set<string>>(
 		() => new Set(skillTree.map((category) => category.id)),
 	);
 
-	const filters: BrowseFilters = { query, statuses, minImportance };
+	const filters: BrowseFilters = { query, statuses, importances };
 	const filtered = useMemo(
-		() => filterTree(skillTree, { query, statuses, minImportance }),
-		[query, statuses, minImportance],
+		() => filterTree(skillTree, { query, statuses, importances }),
+		[query, statuses, importances],
 	);
 	const active = hasActiveFilters(filters);
 
@@ -106,10 +99,15 @@ export function BrowseExplorer() {
 				: [...prev, status],
 		);
 
+	const toggleImportance = (level: number) =>
+		setImportances((prev) =>
+			prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level],
+		);
+
 	const clear = () => {
 		setQuery("");
 		setStatuses([]);
-		setMinImportance(1);
+		setImportances([]);
 	};
 
 	return (
@@ -141,13 +139,13 @@ export function BrowseExplorer() {
 					</FilterGroup>
 
 					<FilterGroup label="Importance">
-						{importanceLevels.map((level) => (
+						{conceptImportances.map((level) => (
 							<Chip
-								key={level.value}
-								active={minImportance === level.value}
-								onClick={() => setMinImportance(level.value)}
+								key={level}
+								active={importances.includes(level)}
+								onClick={() => toggleImportance(level)}
 							>
-								{level.label}
+								{level}
 							</Chip>
 						))}
 					</FilterGroup>

@@ -15,6 +15,7 @@ export function getCategories(): Category[] {
 // Row projections used only while assembling the tree below.
 type CategoryRow = { id: number; name: string; slug: string };
 type TechnologyRow = CategoryRow & {
+  description: string | null;
   importance: number;
   parent_technology_id: number | null;
 };
@@ -22,6 +23,7 @@ type ConceptRow = {
   id: number;
   name: string;
   slug: string;
+  description: string | null;
   status: ConceptStatus;
   importance: number;
 };
@@ -34,8 +36,8 @@ type ConceptRow = {
  *   - A technology appears at the top level of every category it links to
  *     directly via technology_category — whether or not it has a parent.
  *   - A technology also nests under its parent, wherever that parent sits. So a
- *     technology with both (e.g. Azure Cosmos DB → parent Azure, category
- *     Databases) shows up twice: nested under Azure and at the top of Databases.
+ *     technology linked to a category directly while also having a parent shows
+ *     up twice: nested under its parent and at the top of that category.
  *   - Concepts hang off their technology, or off a category directly (fallback).
  * All categories are returned, even empty ones, so the explorer can show the
  * full structure before concepts are logged.
@@ -49,7 +51,7 @@ export function getSkillTree(): SkillTreeCategory[] {
   // Ordered by name so children and per-category roots come out sorted below.
   const technologies = db
     .prepare(
-      "SELECT id, name, slug, importance, parent_technology_id FROM technology ORDER BY name",
+      "SELECT id, name, slug, description, importance, parent_technology_id FROM technology ORDER BY name",
     )
     .all() as TechnologyRow[];
   const techCategoryLinks = db
@@ -57,7 +59,7 @@ export function getSkillTree(): SkillTreeCategory[] {
     .all() as { technology_id: number; category_id: number }[];
   const concepts = db
     .prepare(
-      "SELECT id, name, slug, status, importance FROM concept ORDER BY name",
+      "SELECT id, name, slug, description, status, importance FROM concept ORDER BY name",
     )
     .all() as ConceptRow[];
   const conceptTechLinks = db
@@ -73,6 +75,7 @@ export function getSkillTree(): SkillTreeCategory[] {
       id: `concept-${c.id}`,
       name: c.name,
       slug: c.slug,
+      description: c.description,
       status: c.status,
       importance: c.importance,
     });
@@ -130,6 +133,7 @@ export function getSkillTree(): SkillTreeCategory[] {
       id: `tech-${tech.id}`,
       name: tech.name,
       slug: tech.slug,
+      description: tech.description,
       importance: tech.importance,
       concepts: conceptsByTech.get(tech.id) ?? [],
       children: children.length > 0 ? children : undefined,

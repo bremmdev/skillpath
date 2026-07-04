@@ -1,4 +1,5 @@
-import { ChevronRight, Layers } from "lucide-react";
+import { ChevronRight, Info, Layers } from "lucide-react";
+import { useState } from "react";
 
 import { Badge } from "@/ui/components/ui/badge";
 import { Card } from "@/ui/components/ui/card";
@@ -32,11 +33,11 @@ function ImportanceDots({ value }: { value: number }) {
 	return (
 		<span
 			className="flex items-center gap-0.5"
-			title={`Importance ${value}/5`}
+			title={`Importance ${value}/3`}
 			role="img"
-			aria-label={`Importance ${value} of 5`}
+			aria-label={`Importance ${value} of 3`}
 		>
-			{[1, 2, 3, 4, 5].map((level) => (
+			{[1, 2, 3].map((level) => (
 				<span
 					key={level}
 					className={cn(
@@ -49,6 +50,45 @@ function ImportanceDots({ value }: { value: number }) {
 	);
 }
 
+/** ⓘ button that toggles a node's inline description. */
+function DescriptionToggle({
+	open,
+	onToggle,
+	label,
+}: {
+	open: boolean;
+	onToggle: () => void;
+	label: string;
+}) {
+	return (
+		<button
+			type="button"
+			onClick={onToggle}
+			aria-expanded={open}
+			aria-label={`${open ? "Hide" : "Show"} description for ${label}`}
+			title={open ? "Hide description" : "Show description"}
+			className={cn(
+				"hover:text-foreground shrink-0 rounded-sm transition-colors",
+				open ? "text-foreground" : "text-muted-foreground/70",
+			)}
+		>
+			<Info className="size-4" />
+		</button>
+	);
+}
+
+/** Inline description text, indented to sit under the row it belongs to. */
+function DescriptionPanel({ text, depth }: { text: string; depth: number }) {
+	return (
+		<p
+			className="text-muted-foreground max-w-prose pr-6 pb-2 text-xs leading-relaxed"
+			style={{ paddingLeft: depth * INDENT + BASE_PADDING + 28 }}
+		>
+			{text}
+		</p>
+	);
+}
+
 function ConceptRow({
 	concept,
 	depth,
@@ -57,17 +97,31 @@ function ConceptRow({
 	depth: number;
 }) {
 	const meta = statusMeta[concept.status];
+	const [showDescription, setShowDescription] = useState(false);
+	const { description } = concept;
 	return (
-		<div
-			className="hover:bg-muted/50 flex items-center gap-3 py-2 pr-3 text-sm transition-colors"
-			style={indent(depth)}
-		>
-			<span className={cn("size-2 shrink-0 rounded-full", meta.dot)} />
-			<span className="min-w-0 flex-1 truncate">{concept.name}</span>
-			<Badge variant="secondary" className={cn("font-normal", meta.text)}>
-				{meta.label}
-			</Badge>
-			<ImportanceDots value={concept.importance} />
+		<div>
+			<div
+				className="hover:bg-muted/50 flex items-center gap-3 py-2 pr-3 text-sm transition-colors"
+				style={indent(depth)}
+			>
+				<span className={cn("size-2 shrink-0 rounded-full", meta.dot)} />
+				<span className="min-w-0 flex-1 truncate">{concept.name}</span>
+				<Badge variant="secondary" className={cn("font-normal", meta.text)}>
+					{meta.label}
+				</Badge>
+				<ImportanceDots value={concept.importance} />
+				{description && (
+					<DescriptionToggle
+						open={showDescription}
+						onToggle={() => setShowDescription((v) => !v)}
+						label={concept.name}
+					/>
+				)}
+			</div>
+			{description && showDescription && (
+				<DescriptionPanel text={description} depth={depth} />
+			)}
 		</div>
 	);
 }
@@ -82,27 +136,45 @@ function TechnologyNode({
 	controls: NodeControls;
 }) {
 	const open = controls.isOpen(tech.id);
+	const [showDescription, setShowDescription] = useState(false);
+	const { description } = tech;
 	return (
 		<div>
-			<button
-				type="button"
-				onClick={() => controls.toggle(tech.id)}
-				aria-expanded={open}
-				className="hover:bg-muted/50 flex w-full items-center gap-2 py-2 pr-3 text-left text-sm transition-colors"
+			<div
+				className="hover:bg-muted/50 flex items-center gap-2 pr-3 transition-colors"
 				style={indent(depth)}
 			>
-				<ChevronRight
-					className={cn(
-						"text-muted-foreground size-4 shrink-0 transition-transform",
-						open && "rotate-90",
-					)}
-				/>
-				<Layers className="text-chart-2 size-4 shrink-0" />
-				<span className="min-w-0 flex-1 truncate font-medium">{tech.name}</span>
-				<span className="text-muted-foreground text-xs tabular-nums">
-					{countTechnologyConcepts(tech)}
-				</span>
-			</button>
+				<button
+					type="button"
+					onClick={() => controls.toggle(tech.id)}
+					aria-expanded={open}
+					className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left text-sm"
+				>
+					<ChevronRight
+						className={cn(
+							"text-muted-foreground size-4 shrink-0 transition-transform",
+							open && "rotate-90",
+						)}
+					/>
+					<Layers className="text-chart-2 size-4 shrink-0" />
+					<span className="min-w-0 flex-1 truncate font-medium">
+						{tech.name}
+					</span>
+					<span className="text-muted-foreground text-xs tabular-nums">
+						{countTechnologyConcepts(tech)}
+					</span>
+				</button>
+				{description && (
+					<DescriptionToggle
+						open={showDescription}
+						onToggle={() => setShowDescription((v) => !v)}
+						label={tech.name}
+					/>
+				)}
+			</div>
+			{description && showDescription && (
+				<DescriptionPanel text={description} depth={depth} />
+			)}
 			{open && (
 				<div>
 					{(tech.children ?? []).map((child) => (

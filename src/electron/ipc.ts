@@ -1,5 +1,7 @@
 import { ipcMain } from "electron";
+import { createConcept } from "./db/db-mutate.js";
 import { getCategories, getSkillTree } from "./db/db-query.js";
+import type { CreateConceptInput } from "./db/types.js";
 
 // The app's IPC contract, in one place. Each ipcMain.handle here should have a
 // matching bridge method in preload.cts and a matching type in
@@ -7,6 +9,9 @@ import { getCategories, getSkillTree } from "./db/db-query.js";
 // call into the db layer and let it throw (the rejection crosses IPC to React
 // Query). Call this once from main.ts after the app is ready.
 export function registerIpcHandlers() {
-  ipcMain.handle("categories:get", () => getCategories());
-  ipcMain.handle("skillTree:get", () => getSkillTree());
+	ipcMain.handle("categories:get", () => getCategories());
+	ipcMain.handle("skillTree:get", () => getSkillTree());
+	ipcMain.handle("concepts:create", (_event, input: CreateConceptInput) =>
+		createConcept(input),
+	);
 }

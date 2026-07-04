@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Plus, Search } from "lucide-react";
-import { Button } from "@/ui/components/ui/button";
+import { Search } from "lucide-react";
+import { LogConceptDialog } from "@/ui/components/concepts/log-concept-dialog";
 import { Input } from "@/ui/components/ui/input";
 import { cn } from "@/ui/lib/utils";
 
@@ -56,10 +56,7 @@ export function TopNav() {
 					</kbd>
 				</div>
 
-				<Button size="sm" className="h-9 gap-1.5 px-3">
-					<Plus className="size-4" />
-					Log concept
-				</Button>
+				<LogConceptDialog />
 			</div>
 		</header>
 	);

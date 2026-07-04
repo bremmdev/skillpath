@@ -32,8 +32,10 @@ export const conceptStatuses: ConceptStatus[] = [
 	"discovered",
 	"learning",
 	"learned",
-	"mastered",
 ];
+
+/** Selectable importance levels (1–3), used for the importance filter chips. */
+export const conceptImportances: number[] = [1, 2, 3];
 
 export const statusMeta: Record<
 	ConceptStatus,
@@ -46,7 +48,6 @@ export const statusMeta: Record<
 	},
 	learning: { label: "Learning", dot: "bg-chart-4", text: "text-chart-4" },
 	learned: { label: "Learned", dot: "bg-chart-2", text: "text-chart-2" },
-	mastered: { label: "Mastered", dot: "bg-chart-1", text: "text-chart-1" },
 };
 
 // --- filtering --------------------------------------------------------------
@@ -56,15 +57,15 @@ export type BrowseFilters = {
 	query: string;
 	/** Active status filters; empty means "all statuses". */
 	statuses: ConceptStatus[];
-	/** Minimum importance; 1 means "any". */
-	minImportance: number;
+	/** Active importance filters; empty means "all importances". */
+	importances: number[];
 };
 
 export function hasActiveFilters(filters: BrowseFilters): boolean {
 	return (
 		filters.query.trim() !== "" ||
 		filters.statuses.length > 0 ||
-		filters.minImportance > 1
+		filters.importances.length > 0
 	);
 }
 
@@ -88,7 +89,13 @@ function conceptPasses(
 	) {
 		return false;
 	}
-	return concept.importance >= filters.minImportance;
+	if (
+		filters.importances.length > 0 &&
+		!filters.importances.includes(concept.importance)
+	) {
+		return false;
+	}
+	return true;
 }
 
 function filterTechnology(
