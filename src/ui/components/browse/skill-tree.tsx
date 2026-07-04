@@ -29,6 +29,11 @@ function indent(depth: number) {
 	return { paddingLeft: depth * INDENT + BASE_PADDING };
 }
 
+/** Alphabetical comparator for named tree nodes. */
+function byName(a: { name: string }, b: { name: string }) {
+	return a.name.localeCompare(b.name);
+}
+
 function ImportanceDots({ value }: { value: number }) {
 	return (
 		<span
@@ -177,7 +182,7 @@ function TechnologyNode({
 			)}
 			{open && (
 				<div>
-					{(tech.children ?? []).map((child) => (
+					{[...(tech.children ?? [])].sort(byName).map((child) => (
 						<TechnologyNode
 							key={child.id}
 							tech={child}
@@ -185,9 +190,15 @@ function TechnologyNode({
 							controls={controls}
 						/>
 					))}
-					{tech.concepts.map((concept) => (
-						<ConceptRow key={concept.id} concept={concept} depth={depth + 1} />
-					))}
+					{[...tech.concepts]
+						.sort(byName)
+						.map((concept) => (
+							<ConceptRow
+								key={concept.id}
+								concept={concept}
+								depth={depth + 1}
+							/>
+						))}
 				</div>
 			)}
 		</div>
@@ -225,7 +236,7 @@ function CategoryNode({
 			</button>
 			{open && (
 				<div className="pb-1">
-					{category.technologies.map((tech) => (
+					{[...category.technologies].sort(byName).map((tech) => (
 						<TechnologyNode
 							key={tech.id}
 							tech={tech}
@@ -233,7 +244,7 @@ function CategoryNode({
 							controls={controls}
 						/>
 					))}
-					{category.concepts.map((concept) => (
+					{[...category.concepts].sort(byName).map((concept) => (
 						<ConceptRow key={concept.id} concept={concept} depth={1} />
 					))}
 				</div>

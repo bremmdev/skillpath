@@ -75,7 +75,7 @@ export function BrowseExplorer() {
 	const filters: BrowseFilters = { query, statuses, importances };
 	const filtered = useMemo(
 		() => filterTree(skillTree, { query, statuses, importances }),
-		[query, statuses, importances],
+		[skillTree, query, statuses, importances],
 	);
 	const active = hasActiveFilters(filters);
 
