@@ -46,7 +46,7 @@ function ImportanceDots({ value }: { value: number }) {
 				<span
 					key={level}
 					className={cn(
-						"size-1.5 rounded-full",
+						"size-2 rounded-full",
 						level <= value ? "bg-foreground/60" : "bg-muted-foreground/20",
 					)}
 				/>
@@ -153,7 +153,7 @@ function TechnologyNode({
 					type="button"
 					onClick={() => controls.toggle(tech.id)}
 					aria-expanded={open}
-					className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left text-sm"
+					className="flex min-w-0 flex-1 items-center gap-2 py-2 text-left text-base"
 				>
 					<ChevronRight
 						className={cn(
@@ -230,7 +230,7 @@ function CategoryNode({
 				<span className="font-heading min-w-0 flex-1 truncate text-sm font-semibold tracking-wider uppercase">
 					{category.name}
 				</span>
-				<Badge variant="secondary" className="font-normal">
+				<Badge variant="secondary" className="font-normal text-xs">
 					{countConcepts(category)} concepts
 				</Badge>
 			</button>

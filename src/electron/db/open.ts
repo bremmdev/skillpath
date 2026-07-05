@@ -26,6 +26,7 @@ export function openDatabase(dbPath: string): DatabaseSync {
     `);
 
     runMigrations(sqlite);
+    sqlite.exec("PRAGMA optimize = 0x10002;"); // analyze with the 'all tables' flag
 
     return sqlite;
   } catch (error) {
@@ -35,13 +36,14 @@ export function openDatabase(dbPath: string): DatabaseSync {
 }
 
 /**
- * Checkpoints the WAL, runs optimize, and closes the handle. The caller owns the
+ * Runs optimize, checkpoints the WAL, and closes the handle. The caller owns the
  * reference; this deliberately does not touch any module-level singleton (see
  * closeDatabase in ./index.ts for the app's singleton wrapper).
  */
 export function closeConnection(db: DatabaseSync): void {
-  db.exec("PRAGMA wal_checkpoint(TRUNCATE);");
+  // Optimize BEFORE truncating the WAL
   db.exec("PRAGMA optimize;");
+  db.exec("PRAGMA wal_checkpoint(TRUNCATE);");
   db.close();
 }
 
