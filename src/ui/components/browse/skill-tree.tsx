@@ -86,8 +86,8 @@ function DescriptionToggle({
 function DescriptionPanel({ text, depth }: { text: string; depth: number }) {
 	return (
 		<p
-			className="text-muted-foreground max-w-prose pr-6 pb-2 text-xs leading-relaxed"
-			style={{ paddingLeft: depth * INDENT + BASE_PADDING + 28 }}
+			className="text-muted-foreground max-w-1/2 pr-6 pb-2 text-sm leading-relaxed"
+			style={{ paddingLeft: depth * INDENT + BASE_PADDING + 20 }}
 		>
 			{text}
 		</p>
@@ -102,12 +102,15 @@ function ConceptRow({
 	depth: number;
 }) {
 	const meta = statusMeta[concept.status];
-	const [showDescription, setShowDescription] = useState(false);
+	const [open, setOpen] = useState(false);
 	const { description } = concept;
 	return (
 		<div>
-			<div
-				className="hover:bg-muted/50 flex items-center gap-3 py-2 pr-3 text-sm transition-colors"
+			<button
+				type="button"
+				onClick={() => setOpen((v) => !v)}
+				aria-expanded={open}
+				className="hover:bg-muted/50 flex w-full items-center gap-3 py-2 pr-3 text-left text-sm transition-colors"
 				style={indent(depth)}
 			>
 				<span className={cn("size-2 shrink-0 rounded-full", meta.dot)} />
@@ -117,16 +120,21 @@ function ConceptRow({
 				</Badge>
 				<ImportanceDots value={concept.importance} />
 				{description && (
-					<DescriptionToggle
-						open={showDescription}
-						onToggle={() => setShowDescription((v) => !v)}
-						label={concept.name}
+					<Info
+						aria-hidden
+						className={cn(
+							"size-4 shrink-0 transition-colors",
+							open ? "text-foreground" : "text-muted-foreground/70",
+						)}
 					/>
 				)}
-			</div>
-			{description && showDescription && (
-				<DescriptionPanel text={description} depth={depth} />
-			)}
+			</button>
+			{open &&
+				(description ? (
+					<DescriptionPanel text={description} depth={depth} />
+				) : (
+					<div aria-hidden className="h-5" />
+				))}
 		</div>
 	);
 }
