@@ -64,7 +64,11 @@ function buildLinkOptions(tree: SkillTreeCategory[]): {
 	};
 }
 
-function parseLink(value: string): ConceptLink | null {
+// The narrow return type (not ConceptLink) lets the result double as a
+// NewTechnologyParent when picking where a new technology nests.
+function parseLink(
+	value: string,
+): { type: "technology" | "category"; id: number } | null {
 	const match = value.match(/^(tech|cat)-(\d+)$/);
 	if (!match) return null;
 	return {
@@ -72,6 +76,9 @@ function parseLink(value: string): ConceptLink | null {
 		id: Number(match[2]),
 	};
 }
+
+// Sentinel value for the "nest under" select: create the parent too.
+const NEW_PARENT = "new-parent";
 
 // Electron prefixes rejections that cross IPC with "Error invoking remote
 // method 'concepts:create': Error: …" — strip that down to the real message.
@@ -111,6 +118,25 @@ function ChipButton({
 	);
 }
 
+function LinkOptionGroup({
+	label,
+	options,
+}: {
+	label: string;
+	options: LinkOption[];
+}) {
+	return (
+		<SelectGroup>
+			<SelectLabel>{label}</SelectLabel>
+			{options.map((option) => (
+				<SelectItem key={option.value} value={option.value}>
+					{option.label}
+				</SelectItem>
+			))}
+		</SelectGroup>
+	);
+}
+
 function LogConceptForm({ onLogged }: { onLogged: () => void }) {
 	const queryClient = useQueryClient();
 	// Mounted only while the dialog is open, so the tree is fetched (or read
@@ -119,6 +145,16 @@ function LogConceptForm({ onLogged }: { onLogged: () => void }) {
 
 	const [name, setName] = useState("");
 	const [linkValue, setLinkValue] = useState<string | null>(null);
+	// "existing" links to something already in the tree; "new" creates a
+	// technology (and optionally its parent) along with the concept. Both
+	// modes keep their state when toggling, only the active one is submitted.
+	const [linkMode, setLinkMode] = useState<"existing" | "new">("existing");
+	const [newTechName, setNewTechName] = useState("");
+	const [newTechUnder, setNewTechUnder] = useState<string | null>(null);
+	const [newParentName, setNewParentName] = useState("");
+	const [newParentCategory, setNewParentCategory] = useState<string | null>(
+		null,
+	);
 	const [status, setStatus] = useState<ConceptStatus>("learned");
 	const [importance, setImportance] = useState(2);
 	const [description, setDescription] = useState("");
@@ -135,6 +171,10 @@ function LogConceptForm({ onLogged }: { onLogged: () => void }) {
 		() => [...options.technologies, ...options.categories],
 		[options],
 	);
+	const nestItems = useMemo(
+		() => [...items, { value: NEW_PARENT, label: "New parent technology…" }],
+		[items],
+	);
 
 	const mutation = useMutation({
 		mutationFn: (input: CreateConceptInput) =>
@@ -147,7 +187,41 @@ function LogConceptForm({ onLogged }: { onLogged: () => void }) {
 		},
 	});
 
-	const link = linkValue === null ? null : parseLink(linkValue);
+	// null while the active mode's fields are incomplete, which keeps submit
+	// disabled — so no per-field validation messages are needed.
+	const buildNewTechLink = (): ConceptLink | null => {
+		const techName = newTechName.trim();
+		if (techName === "" || newTechUnder === null) return null;
+
+		if (newTechUnder === NEW_PARENT) {
+			const parentName = newParentName.trim();
+			const category =
+				newParentCategory === null ? null : parseLink(newParentCategory);
+			if (parentName === "" || category?.type !== "category") return null;
+			return {
+				type: "newTechnology",
+				technology: {
+					name: techName,
+					parent: {
+						type: "newTechnology",
+						name: parentName,
+						categoryId: category.id,
+					},
+				},
+			};
+		}
+
+		const parent = parseLink(newTechUnder);
+		if (parent === null) return null;
+		return { type: "newTechnology", technology: { name: techName, parent } };
+	};
+
+	const link =
+		linkMode === "existing"
+			? linkValue === null
+				? null
+				: parseLink(linkValue)
+			: buildNewTechLink();
 	const canSubmit = name.trim() !== "" && link !== null && !mutation.isPending;
 
 	const handleSubmit = (event: React.FormEvent) => {
@@ -177,12 +251,29 @@ function LogConceptForm({ onLogged }: { onLogged: () => void }) {
 			</div>
 
 			<div className="flex flex-col gap-2">
-				<Label htmlFor="concept-link">Belongs to</Label>
+				<div className="flex items-center justify-between">
+					<Label
+						htmlFor={linkMode === "existing" ? "concept-link" : "new-tech-name"}
+					>
+						Belongs to
+					</Label>
+					<button
+						type="button"
+						onClick={() =>
+							setLinkMode(linkMode === "existing" ? "new" : "existing")
+						}
+						className="text-muted-foreground hover:text-foreground text-xs font-medium transition-colors"
+					>
+						{linkMode === "existing"
+							? "+ New technology"
+							: "Pick existing instead"}
+					</button>
+				</div>
 				{skillTree.isError ? (
 					<p className="text-destructive text-sm">
 						Couldn't load technologies and categories: {skillTree.error.message}
 					</p>
-				) : (
+				) : linkMode === "existing" ? (
 					<Select
 						items={items}
 						value={linkValue}
@@ -198,25 +289,106 @@ function LogConceptForm({ onLogged }: { onLogged: () => void }) {
 								}
 							/>
 						</SelectTrigger>
-						<SelectContent>
-							<SelectGroup>
-								<SelectLabel>Technologies</SelectLabel>
-								{options.technologies.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-							</SelectGroup>
-							<SelectGroup>
-								<SelectLabel>Categories</SelectLabel>
-								{options.categories.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-							</SelectGroup>
+						<SelectContent
+							alignItemWithTrigger={false}
+							collisionAvoidance={{ side: "none" }}
+						>
+							<LinkOptionGroup
+								label="Technologies"
+								options={options.technologies}
+							/>
+							<LinkOptionGroup
+								label="Categories"
+								options={options.categories}
+							/>
 						</SelectContent>
 					</Select>
+				) : (
+					<div className="border-border flex flex-col gap-4 border p-3">
+						<div className="flex flex-col gap-2">
+							<Label htmlFor="new-tech-name">Technology name</Label>
+							<Input
+								id="new-tech-name"
+								value={newTechName}
+								onChange={(event) => setNewTechName(event.target.value)}
+								placeholder="e.g. IAM"
+								required
+							/>
+						</div>
+						<div className="flex flex-col gap-2">
+							<Label htmlFor="new-tech-under">Nest under</Label>
+							<Select
+								items={nestItems}
+								value={newTechUnder}
+								onValueChange={setNewTechUnder}
+								disabled={skillTree.isPending}
+							>
+								<SelectTrigger id="new-tech-under" className="w-full">
+									<SelectValue
+										placeholder={
+											skillTree.isPending
+												? "Loading…"
+												: "Pick a parent technology or category"
+										}
+									/>
+								</SelectTrigger>
+								<SelectContent
+									alignItemWithTrigger={false}
+									collisionAvoidance={{ side: "none" }}
+								>
+									<LinkOptionGroup
+										label="Technologies"
+										options={options.technologies}
+									/>
+									<LinkOptionGroup
+										label="Categories"
+										options={options.categories}
+									/>
+									<SelectGroup>
+										<SelectItem value={NEW_PARENT}>
+											<Plus />
+											New parent technology…
+										</SelectItem>
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+						</div>
+						{newTechUnder === NEW_PARENT && (
+							<>
+								<div className="flex flex-col gap-2">
+									<Label htmlFor="new-parent-name">Parent name</Label>
+									<Input
+										id="new-parent-name"
+										value={newParentName}
+										onChange={(event) => setNewParentName(event.target.value)}
+										placeholder="e.g. AWS"
+										required
+									/>
+								</div>
+								<div className="flex flex-col gap-2">
+									<Label htmlFor="new-parent-category">Parent's category</Label>
+									<Select
+										items={options.categories}
+										value={newParentCategory}
+										onValueChange={setNewParentCategory}
+									>
+										<SelectTrigger id="new-parent-category" className="w-full">
+											<SelectValue placeholder="Pick a category" />
+										</SelectTrigger>
+										<SelectContent
+											alignItemWithTrigger={false}
+											collisionAvoidance={{ side: "none" }}
+										>
+											<LinkOptionGroup
+												label="Categories"
+												options={options.categories}
+											/>
+										</SelectContent>
+									</Select>
+								</div>
+							</>
+						)}
+					</div>
 				)}
 			</div>
 

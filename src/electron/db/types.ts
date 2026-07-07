@@ -66,13 +66,31 @@ export type NewConcept = Omit<
 > &
 	Partial<Pick<Concept, "description" | "status" | "importance">>;
 
+// Where a technology created on the fly (while logging a concept) hangs in
+// the tree. Mirrors schema rule 7 (./migrations.ts): every technology must
+// reach a category, so it either nests under a parent technology — existing,
+// or itself created on the fly (one level deep) — or links directly to a
+// category as a root. A new parent is always a root, hence its categoryId.
+export type NewTechnologyParent =
+	| { type: "technology"; id: number }
+	| { type: "category"; id: number }
+	| { type: "newTechnology"; name: string; categoryId: number };
+
+export type NewTechnologyInput = {
+	name: string;
+	parent: NewTechnologyParent;
+};
+
 // Input for createConcept() (see ./db-mutate.ts). The link is required because
 // the "every concept has at least one link" rule lives in the service layer,
 // not the DDL (schema rule 7 in ./migrations.ts); it is singular because a
 // concept links to exactly one technology or category (rule 5, DB triggers).
+// The newTechnology variant creates the technology (and optionally its parent)
+// in the same transaction as the concept, then links the concept to it.
 export type ConceptLink =
 	| { type: "technology"; id: number }
-	| { type: "category"; id: number };
+	| { type: "category"; id: number }
+	| { type: "newTechnology"; technology: NewTechnologyInput };
 
 export type CreateConceptInput = {
 	name: string;
