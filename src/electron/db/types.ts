@@ -100,6 +100,18 @@ export type CreateConceptInput = {
 	link: ConceptLink;
 };
 
+// Input for updateConcept() (see ./db-mutate.ts). Identifies the concept by id
+// and replaces its editable fields; the concept's technology/category link is
+// not touched here (re-parenting is a separate operation). A null/absent
+// description clears any existing notes.
+export type UpdateConceptInput = {
+	id: number;
+	name: string;
+	description?: string | null;
+	status: ConceptStatus;
+	importance: number;
+};
+
 // --- junction tables --------------------------------------------------------
 
 export type TechnologyCategory = {

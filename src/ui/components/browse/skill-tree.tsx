@@ -1,6 +1,7 @@
-import { ChevronRight, Info, Layers } from "lucide-react";
+import { ChevronRight, Info, Layers, Pencil } from "lucide-react";
 import { useState } from "react";
 
+import { EditConceptDialog } from "@/ui/components/concepts/edit-concept-dialog";
 import { Badge } from "@/ui/components/ui/badge";
 import { Card } from "@/ui/components/ui/card";
 import type {
@@ -103,38 +104,57 @@ function ConceptRow({
 }) {
 	const meta = statusMeta[concept.status];
 	const [open, setOpen] = useState(false);
+	const [editing, setEditing] = useState(false);
 	const { description } = concept;
 	return (
 		<div>
-			<button
-				type="button"
-				onClick={() => setOpen((v) => !v)}
-				aria-expanded={open}
-				className="hover:bg-muted/50 flex w-full items-center gap-3 py-2 pr-3 text-left text-sm transition-colors"
+			<div
+				className="hover:bg-muted/50 flex items-center gap-2 pr-3 transition-colors"
 				style={indent(depth)}
 			>
-				<span className={cn("size-2 shrink-0 rounded-full", meta.dot)} />
-				<span className="min-w-0 flex-1 truncate">{concept.name}</span>
-				<Badge variant="secondary" className={cn("font-normal", meta.text)}>
-					{meta.label}
-				</Badge>
-				<ImportanceDots value={concept.importance} />
-				{description && (
-					<Info
-						aria-hidden
-						className={cn(
-							"size-4 shrink-0 transition-colors",
-							open ? "text-foreground" : "text-muted-foreground/70",
-						)}
-					/>
-				)}
-			</button>
+				<button
+					type="button"
+					onClick={() => setOpen((v) => !v)}
+					aria-expanded={open}
+					className="flex min-w-0 flex-1 items-center gap-3 py-2 text-left text-sm"
+				>
+					<span className={cn("size-2 shrink-0 rounded-full", meta.dot)} />
+					<span className="min-w-0 flex-1 truncate">{concept.name}</span>
+					<Badge variant="secondary" className={cn("font-normal", meta.text)}>
+						{meta.label}
+					</Badge>
+					<ImportanceDots value={concept.importance} />
+					{description && (
+						<Info
+							aria-hidden
+							className={cn(
+								"size-4 shrink-0 transition-colors",
+								open ? "text-foreground" : "text-muted-foreground/70",
+							)}
+						/>
+					)}
+				</button>
+				<button
+					type="button"
+					onClick={() => setEditing(true)}
+					aria-label={`Edit ${concept.name}`}
+					title="Edit concept"
+					className="text-muted-foreground/70 hover:text-foreground shrink-0 rounded-sm transition-colors"
+				>
+					<Pencil className="size-4" />
+				</button>
+			</div>
 			{open &&
 				(description ? (
 					<DescriptionPanel text={description} depth={depth} />
 				) : (
 					<div aria-hidden className="h-5" />
 				))}
+			<EditConceptDialog
+				concept={concept}
+				open={editing}
+				onOpenChange={setEditing}
+			/>
 		</div>
 	);
 }

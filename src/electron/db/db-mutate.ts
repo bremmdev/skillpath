@@ -5,6 +5,7 @@ import type {
 	Concept,
 	CreateConceptInput,
 	NewTechnologyInput,
+	UpdateConceptInput,
 } from "./types.js";
 
 /**
@@ -132,4 +133,51 @@ export function createConcept(input: CreateConceptInput): Concept {
 		db.exec("ROLLBACK");
 		throw error;
 	}
+}
+
+/**
+ * Updates a concept's editable fields (name, description, status, importance)
+ * in place, leaving its technology/category link untouched. A status change is
+ * recorded in concept_status_event and updated_at is bumped automatically by
+ * the DB triggers (see ./migrations.ts), so no transaction is needed here —
+ * it's a single UPDATE.
+ *
+ * Name emptiness and slug collisions get friendly errors (user-reachable from
+ * the edit form); the slug check excludes this concept so re-saving with an
+ * unchanged name isn't flagged as a duplicate.
+ */
+export function updateConcept(input: UpdateConceptInput): Concept {
+	const db = getDatabase();
+
+	const name = input.name.trim();
+	if (name === "") {
+		throw new Error("Concept name is required");
+	}
+	const slug = formatSlug(name);
+	if (slug === "") {
+		throw new Error("Concept name must contain at least one letter or number");
+	}
+	if (
+		db
+			.prepare("SELECT 1 FROM concept WHERE slug = ? AND id <> ?")
+			.get(slug, input.id)
+	) {
+		throw new Error(`A concept named "${name}" already exists`);
+	}
+
+	const description = input.description?.trim() || null;
+
+	const { changes } = db
+		.prepare(
+			"UPDATE concept SET name = ?, slug = ?, description = ?, status = ?, importance = ? WHERE id = ?",
+		)
+		.run(name, slug, description, input.status, input.importance, input.id);
+
+	if (changes === 0) {
+		throw new Error("Concept not found");
+	}
+
+	return db
+		.prepare("SELECT * FROM concept WHERE id = ?")
+		.get(input.id) as Concept;
 }

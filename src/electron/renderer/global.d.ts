@@ -3,6 +3,7 @@ import type {
 	Concept,
 	CreateConceptInput,
 	SkillTreeCategory,
+	UpdateConceptInput,
 } from "../db/types";
 
 // Ambient contract for the API surface exposed by preload.ts via
@@ -20,6 +21,7 @@ declare global {
 			};
 			concepts: {
 				create: (input: CreateConceptInput) => Promise<Concept>;
+				update: (input: UpdateConceptInput) => Promise<Concept>;
 			};
 		};
 	}

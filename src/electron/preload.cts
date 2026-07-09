@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld("api", {
 	},
 	concepts: {
 		create: (input: unknown) => ipcRenderer.invoke("concepts:create", input),
+		update: (input: unknown) => ipcRenderer.invoke("concepts:update", input),
 	},
 });

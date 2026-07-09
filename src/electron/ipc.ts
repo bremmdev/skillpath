@@ -1,7 +1,7 @@
 import { ipcMain } from "electron";
-import { createConcept } from "./db/db-mutate.js";
+import { createConcept, updateConcept } from "./db/db-mutate.js";
 import { getCategories, getSkillTree } from "./db/db-query.js";
-import type { CreateConceptInput } from "./db/types.js";
+import type { CreateConceptInput, UpdateConceptInput } from "./db/types.js";
 
 // The app's IPC contract, in one place. Each ipcMain.handle here should have a
 // matching bridge method in preload.cts and a matching type in
@@ -13,5 +13,8 @@ export function registerIpcHandlers() {
 	ipcMain.handle("skillTree:get", () => getSkillTree());
 	ipcMain.handle("concepts:create", (_event, input: CreateConceptInput) =>
 		createConcept(input),
+	);
+	ipcMain.handle("concepts:update", (_event, input: UpdateConceptInput) =>
+		updateConcept(input),
 	);
 }

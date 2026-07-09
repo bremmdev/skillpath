@@ -9,6 +9,13 @@ import type {
 	SkillTreeCategory,
 	SkillTreeTechnology,
 } from "#/electron/db/types";
+import {
+	ImportanceChips,
+	ipcErrorMessage,
+	NameField,
+	NotesField,
+	StatusChips,
+} from "@/ui/components/concepts/concept-fields";
 import { Button } from "@/ui/components/ui/button";
 import {
 	Dialog,
@@ -30,10 +37,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/ui/components/ui/select";
-import { Textarea } from "@/ui/components/ui/textarea";
-import { conceptStatuses, statusMeta } from "@/ui/data/browse";
 import { skillTreeQueryOptions } from "@/ui/lib/query";
-import { cn } from "@/ui/lib/utils";
 
 type LinkOption = { value: string; label: string };
 
@@ -79,44 +83,6 @@ function parseLink(
 
 // Sentinel value for the "nest under" select: create the parent too.
 const NEW_PARENT = "new-parent";
-
-// Electron prefixes rejections that cross IPC with "Error invoking remote
-// method 'concepts:create': Error: …" — strip that down to the real message.
-function ipcErrorMessage(error: Error): string {
-	return error.message.replace(
-		/^Error invoking remote method '[^']+': (?:Error: )?/,
-		"",
-	);
-}
-
-function ChipButton({
-	active,
-	onClick,
-	children,
-	className,
-}: {
-	active: boolean;
-	onClick: () => void;
-	children: React.ReactNode;
-	className?: string;
-}) {
-	return (
-		<button
-			type="button"
-			onClick={onClick}
-			aria-pressed={active}
-			className={cn(
-				"flex items-center gap-1.5 border px-2.5 py-1 text-xs font-medium transition-colors",
-				active
-					? "border-foreground bg-foreground text-background"
-					: "border-border text-muted-foreground hover:text-foreground",
-				className,
-			)}
-		>
-			{children}
-		</button>
-	);
-}
 
 function LinkOptionGroup({
 	label,
@@ -238,17 +204,7 @@ function LogConceptForm({ onLogged }: { onLogged: () => void }) {
 
 	return (
 		<form onSubmit={handleSubmit} className="flex flex-col gap-5">
-			<div className="flex flex-col gap-2">
-				<Label htmlFor="concept-name">Name</Label>
-				<Input
-					id="concept-name"
-					value={name}
-					onChange={(event) => setName(event.target.value)}
-					placeholder="e.g. Closures"
-					autoFocus
-					required
-				/>
-			</div>
+			<NameField value={name} onChange={setName} />
 
 			<div className="flex flex-col gap-2">
 				<div className="flex items-center justify-between">
@@ -392,56 +348,11 @@ function LogConceptForm({ onLogged }: { onLogged: () => void }) {
 				)}
 			</div>
 
-			{/* legend can't be a flex item, so these use block flow + mt-2 to match
-			    the flex-col gap-2 of the other fields. */}
-			<fieldset>
-				<legend className="flex items-center gap-2 text-xs font-semibold tracking-wide uppercase select-none">
-					Status
-				</legend>
-				<div className="mt-2 flex flex-wrap gap-1.5">
-					{conceptStatuses.map((s) => (
-						<ChipButton
-							key={s}
-							active={status === s}
-							onClick={() => setStatus(s)}
-						>
-							<span
-								className={cn("size-1.5 rounded-full", statusMeta[s].dot)}
-							/>
-							{statusMeta[s].label}
-						</ChipButton>
-					))}
-				</div>
-			</fieldset>
+			<StatusChips value={status} onChange={setStatus} />
 
-			<fieldset>
-				<legend className="flex items-center gap-2 text-xs font-semibold tracking-wide uppercase select-none">
-					Importance
-				</legend>
-				<div className="mt-2 flex gap-1.5">
-					{[1, 2, 3].map((level) => (
-						<ChipButton
-							key={level}
-							active={importance === level}
-							onClick={() => setImportance(level)}
-							className="min-w-8 justify-center"
-						>
-							{level}
-						</ChipButton>
-					))}
-				</div>
-			</fieldset>
+			<ImportanceChips value={importance} onChange={setImportance} />
 
-			<div className="flex flex-col gap-2">
-				<Label htmlFor="concept-description">Notes</Label>
-				<Textarea
-					id="concept-description"
-					value={description}
-					onChange={(event) => setDescription(event.target.value)}
-					placeholder="Optional: what is it, where did you use it…"
-					rows={3}
-				/>
-			</div>
+			<NotesField value={description} onChange={setDescription} />
 
 			{mutation.isError && (
 				<p className="text-destructive text-sm">
