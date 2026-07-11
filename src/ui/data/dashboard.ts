@@ -11,23 +11,6 @@ export type User = {
   initials: string;
 };
 
-export type StatCard = {
-  id: string;
-  label: string;
-  value: string;
-  caption: string;
-  /** Sparkline series — normalized-ish values, smallest to largest x. */
-  trend: number[];
-};
-
-export type RecentConcept = {
-  id: string;
-  title: string;
-  technologies: string[];
-  timeAgo: string;
-  category: string;
-};
-
 export type SkillProfilePoint = {
   month: string;
   score: number;
@@ -53,82 +36,6 @@ export const currentUser: User = {
 export const timeRanges = ["Week", "Month", "Year", "All time"] as const;
 export type TimeRange = (typeof timeRanges)[number];
 export const defaultTimeRange: TimeRange = "Month";
-
-export const statCards: StatCard[] = [
-  {
-    id: "concepts",
-    label: "Concepts logged",
-    value: "9",
-    caption: "+3 this week",
-    trend: [3, 4, 4, 5, 6, 7, 9],
-  },
-  {
-    id: "technologies",
-    label: "Technologies",
-    value: "12",
-    caption: "across 8 categories",
-    trend: [6, 7, 8, 9, 10, 11, 12],
-  },
-  {
-    id: "categories",
-    label: "Active categories",
-    value: "10",
-    caption: "of 10 tracked",
-    trend: [5, 6, 7, 7, 8, 9, 10],
-  },
-  {
-    id: "streak",
-    label: "Day streak",
-    value: "6",
-    caption: "personal best",
-    trend: [2, 4, 3, 5, 4, 5, 6],
-  },
-];
-
-export const recentConcepts: RecentConcept[] = [
-  {
-    id: "css-container-queries",
-    title: "CSS container queries",
-    technologies: ["Tailwind CSS", "Styling"],
-    timeAgo: "2h ago",
-    category: "Styling",
-  },
-  {
-    id: "react-server-components",
-    title: "React Server Components",
-    technologies: ["React", "Frontend"],
-    timeAgo: "Yesterday",
-    category: "Frontend",
-  },
-  {
-    id: "postgresql-indexing",
-    title: "PostgreSQL indexing strategies",
-    technologies: ["PostgreSQL", "Databases"],
-    timeAgo: "2d ago",
-    category: "Databases",
-  },
-  {
-    id: "prompt-engineering",
-    title: "Prompt engineering for structured output",
-    technologies: ["OpenAI API", "AI"],
-    timeAgo: "3d ago",
-    category: "AI",
-  },
-  {
-    id: "docker-multi-stage",
-    title: "Docker multi-stage builds",
-    technologies: ["Docker", "DevOps"],
-    timeAgo: "4d ago",
-    category: "DevOps",
-  },
-  {
-    id: "vnet-azure-functions",
-    title: "VNET integration for Azure Functions",
-    technologies: ["Azure Functions", "Cloud"],
-    timeAgo: "5d ago",
-    category: "Cloud",
-  },
-];
 
 export const skillProfile = {
   score: 63,

@@ -7,6 +7,10 @@ contextBridge.exposeInMainWorld("api", {
 	skillTree: {
 		get: () => ipcRenderer.invoke("skillTree:get"),
 	},
+	dashboard: {
+		stats: () => ipcRenderer.invoke("dashboard:stats"),
+		recentlyLearned: () => ipcRenderer.invoke("dashboard:recentlyLearned"),
+	},
 	concepts: {
 		create: (input: unknown) => ipcRenderer.invoke("concepts:create", input),
 		update: (input: unknown) => ipcRenderer.invoke("concepts:update", input),

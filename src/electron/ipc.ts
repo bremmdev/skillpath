@@ -1,6 +1,11 @@
 import { ipcMain } from "electron";
-import { createConcept, updateConcept } from "./db/db-mutate.js";
-import { getCategories, getSkillTree } from "./db/db-query.js";
+import { getCategories } from "./db/categories.js";
+import { createConcept, updateConcept } from "./db/concepts.js";
+import {
+	getDashboardStats,
+	getRecentlyLearnedConcepts,
+} from "./db/dashboard.js";
+import { getSkillTree } from "./db/skill-tree.js";
 import type { CreateConceptInput, UpdateConceptInput } from "./db/types.js";
 
 // The app's IPC contract, in one place. Each ipcMain.handle here should have a
@@ -11,6 +16,10 @@ import type { CreateConceptInput, UpdateConceptInput } from "./db/types.js";
 export function registerIpcHandlers() {
 	ipcMain.handle("categories:get", () => getCategories());
 	ipcMain.handle("skillTree:get", () => getSkillTree());
+	ipcMain.handle("dashboard:stats", () => getDashboardStats());
+	ipcMain.handle("dashboard:recentlyLearned", () =>
+		getRecentlyLearnedConcepts(),
+	);
 	ipcMain.handle("concepts:create", (_event, input: CreateConceptInput) =>
 		createConcept(input),
 	);

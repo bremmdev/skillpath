@@ -2,6 +2,8 @@ import type {
 	Category,
 	Concept,
 	CreateConceptInput,
+	DashboardStats,
+	RecentlyLearnedConcept,
 	SkillTreeCategory,
 	UpdateConceptInput,
 } from "../db/types";
@@ -18,6 +20,10 @@ declare global {
 			};
 			skillTree: {
 				get: () => Promise<SkillTreeCategory[]>;
+			};
+			dashboard: {
+				stats: () => Promise<DashboardStats>;
+				recentlyLearned: () => Promise<RecentlyLearnedConcept[]>;
 			};
 			concepts: {
 				create: (input: CreateConceptInput) => Promise<Concept>;

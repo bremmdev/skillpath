@@ -52,6 +52,8 @@ function EditConceptForm({
 			queryClient.invalidateQueries({
 				queryKey: skillTreeQueryOptions.queryKey,
 			});
+			// Prefix key: refreshes both dashboard stats and the recently-learned list.
+			queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 			onSaved();
 		},
 	});
