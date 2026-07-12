@@ -33,10 +33,6 @@ export const currentUser: User = {
   initials: "AX",
 };
 
-export const timeRanges = ["Week", "Month", "Year", "All time"] as const;
-export type TimeRange = (typeof timeRanges)[number];
-export const defaultTimeRange: TimeRange = "Month";
-
 export const skillProfile = {
   score: 63,
   deltaSinceJan: 21,
