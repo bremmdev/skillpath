@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { ArrowRight, Triangle } from "lucide-react";
 
 import type { RecentlyLearnedConcept } from "#/electron/db/types";
@@ -60,13 +61,13 @@ export function RecentlyLearned() {
 					What you logged, and the area it strengthened
 				</CardDescription>
 				<CardAction>
-					<button
-						type="button"
+					<Link
+						to="/browse"
 						className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm font-medium transition-colors"
 					>
-						View all
+						View all concepts
 						<ArrowRight className="size-3.5" />
-					</button>
+					</Link>
 				</CardAction>
 			</CardHeader>
 			<CardContent>
