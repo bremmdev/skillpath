@@ -1,6 +1,11 @@
 import type { DatabaseSync } from "node:sqlite";
 import { getDatabase } from "./index.js";
-import type { DashboardStats, RecentlyLearnedConcept } from "./types.js";
+import type {
+	DashboardStats,
+	LearningFocus,
+	LearningFocusRange,
+	RecentlyLearnedConcept,
+} from "./types.js";
 
 /**
  * Resolves every technology to the category ids it reaches, walking up the
@@ -152,6 +157,199 @@ function computeStreaks(
 	}
 
 	return { current, longest };
+}
+
+type FocusTouch = {
+	conceptId: number;
+	changedAt: string;
+	category: string;
+	kind: "added" | "statusChange";
+};
+
+function resolveConceptCategoryNames(db: DatabaseSync): Map<number, string> {
+	const categoryNameById = new Map<number, string>();
+	for (const { id, name } of db
+		.prepare("SELECT id, name FROM category")
+		.all() as { id: number; name: string }[]) {
+		categoryNameById.set(id, name);
+	}
+
+	const categoryIdByConcept = new Map<number, number>();
+	for (const { concept_id, category_id } of db
+		.prepare("SELECT concept_id, category_id FROM concept_category")
+		.all() as { concept_id: number; category_id: number }[]) {
+		if (!categoryIdByConcept.has(concept_id)) {
+			categoryIdByConcept.set(concept_id, category_id);
+		}
+	}
+
+	const techCategories = resolveTechnologyCategories(db);
+	for (const { concept_id, technology_id } of db
+		.prepare("SELECT concept_id, technology_id FROM concept_technology")
+		.all() as { concept_id: number; technology_id: number }[]) {
+		if (categoryIdByConcept.has(concept_id)) continue;
+		const [categoryId] = techCategories.get(technology_id) ?? [];
+		if (categoryId !== undefined) {
+			categoryIdByConcept.set(concept_id, categoryId);
+		}
+	}
+
+	return new Map(
+		[...categoryIdByConcept].map(([conceptId, categoryId]) => [
+			conceptId,
+			categoryNameById.get(categoryId) ?? "Uncategorized",
+		]),
+	);
+}
+
+/**
+ * Aggregates learning activity by category for the current range and the
+ * immediately preceding range. The initial status event is the concept-add
+ * event; subsequent status events are updates. Repeated changes to one concept
+ * on the same UTC day are collapsed into a single touch.
+ */
+export function getLearningFocus(rangeDays: LearningFocusRange): LearningFocus {
+	const db = getDatabase();
+	const dayMs = 86_400_000;
+	const now = new Date();
+	const currentEnd = new Date(
+		Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
+	);
+	const currentStart = new Date(currentEnd.getTime() - rangeDays * dayMs);
+	const previousStart = new Date(currentStart.getTime() - rangeDays * dayMs);
+	const currentStartIso = currentStart.toISOString();
+
+	const rows = db
+		.prepare(
+			`SELECT concept_id, old_status, changed_at
+			 FROM concept_status_event
+			 WHERE changed_at >= ? AND changed_at < ?
+			 ORDER BY changed_at ASC`,
+		)
+		.all(previousStart.toISOString(), currentEnd.toISOString()) as {
+		concept_id: number;
+		old_status: string | null;
+		changed_at: string;
+	}[];
+
+	const categoryByConcept = resolveConceptCategoryNames(db);
+	const touchesByConceptDay = new Map<string, FocusTouch>();
+	for (const row of rows) {
+		const key = `${row.concept_id}:${row.changed_at.slice(0, 10)}`;
+		const existing = touchesByConceptDay.get(key);
+		const kind = row.old_status === null ? "added" : "statusChange";
+
+		if (!existing) {
+			touchesByConceptDay.set(key, {
+				conceptId: row.concept_id,
+				changedAt: row.changed_at,
+				category: categoryByConcept.get(row.concept_id) ?? "Uncategorized",
+				kind,
+			});
+		} else if (kind === "added") {
+			existing.kind = "added";
+			existing.changedAt = row.changed_at;
+		}
+	}
+
+	const currentTouches: FocusTouch[] = [];
+	const previousTouches: FocusTouch[] = [];
+	for (const touch of touchesByConceptDay.values()) {
+		if (touch.changedAt >= currentStartIso) currentTouches.push(touch);
+		else previousTouches.push(touch);
+	}
+
+	const summarize = (touches: FocusTouch[]) => {
+		const categories = new Map<
+			string,
+			{ events: number; added: number; statusChanges: number }
+		>();
+		for (const touch of touches) {
+			const summary = categories.get(touch.category) ?? {
+				events: 0,
+				added: 0,
+				statusChanges: 0,
+			};
+			summary.events++;
+			if (touch.kind === "added") summary.added++;
+			else summary.statusChanges++;
+			categories.set(touch.category, summary);
+		}
+		return categories;
+	};
+
+	const currentCategories = summarize(currentTouches);
+	const previousCategories = summarize(previousTouches);
+	const previousTotalEvents = previousTouches.length;
+
+	const categories = [...currentCategories]
+		.map(([name, summary]) => {
+			const previousEvents = previousCategories.get(name)?.events ?? 0;
+			const share =
+				currentTouches.length > 0
+					? (summary.events / currentTouches.length) * 100
+					: 0;
+			const previousShare =
+				previousTotalEvents > 0
+					? (previousEvents / previousTotalEvents) * 100
+					: null;
+			return {
+				name,
+				...summary,
+				previousEvents,
+				share,
+				shareDelta: previousShare === null ? null : share - previousShare,
+			};
+		})
+		.sort((a, b) => b.events - a.events || a.name.localeCompare(b.name));
+
+	const bucketDays = rangeDays / 6;
+	const bucketMs = bucketDays * dayMs;
+	const buckets = Array.from({ length: 6 }, (_, index) => {
+		const start = new Date(currentStart.getTime() + index * bucketMs);
+		const end = new Date(start.getTime() + bucketMs);
+		return {
+			startDate: start.toISOString().slice(0, 10),
+			endDate: new Date(end.getTime() - dayMs).toISOString().slice(0, 10),
+			total: 0,
+			added: 0,
+			statusChanges: 0,
+			categoryEvents: {} as Record<string, number>,
+		};
+	});
+
+	for (const touch of currentTouches) {
+		const index = Math.min(
+			buckets.length - 1,
+			Math.floor(
+				(Date.parse(touch.changedAt) - currentStart.getTime()) / bucketMs,
+			),
+		);
+		const bucket = buckets[index];
+		bucket.total++;
+		if (touch.kind === "added") bucket.added++;
+		else bucket.statusChanges++;
+		bucket.categoryEvents[touch.category] =
+			(bucket.categoryEvents[touch.category] ?? 0) + 1;
+	}
+
+	const added = currentTouches.filter((touch) => touch.kind === "added").length;
+	const totalDelta =
+		previousTotalEvents > 0
+			? ((currentTouches.length - previousTotalEvents) / previousTotalEvents) *
+				100
+			: null;
+
+	return {
+		rangeDays,
+		totalEvents: currentTouches.length,
+		previousTotalEvents,
+		totalDelta,
+		added,
+		statusChanges: currentTouches.length - added,
+		categories,
+		buckets,
+	};
 }
 
 /**

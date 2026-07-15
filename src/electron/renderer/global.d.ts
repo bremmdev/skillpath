@@ -3,6 +3,8 @@ import type {
 	Concept,
 	CreateConceptInput,
 	DashboardStats,
+	LearningFocus,
+	LearningFocusRange,
 	RecentlyLearnedConcept,
 	SkillTreeCategory,
 	UpdateConceptInput,
@@ -23,6 +25,7 @@ declare global {
 			};
 			dashboard: {
 				stats: () => Promise<DashboardStats>;
+				learningFocus: (range: LearningFocusRange) => Promise<LearningFocus>;
 				recentlyLearned: () => Promise<RecentlyLearnedConcept[]>;
 			};
 			concepts: {

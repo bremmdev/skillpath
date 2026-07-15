@@ -3,6 +3,7 @@ import { getCategories } from "./db/categories.js";
 import { createConcept, updateConcept } from "./db/concepts.js";
 import {
 	getDashboardStats,
+	getLearningFocus,
 	getRecentlyLearnedConcepts,
 } from "./db/dashboard.js";
 import { getSkillTree } from "./db/skill-tree.js";
@@ -17,6 +18,9 @@ export function registerIpcHandlers() {
 	ipcMain.handle("categories:get", () => getCategories());
 	ipcMain.handle("skillTree:get", () => getSkillTree());
 	ipcMain.handle("dashboard:stats", () => getDashboardStats());
+	ipcMain.handle("dashboard:learningFocus", (_event, range: unknown) =>
+		getLearningFocus(range === 90 ? 90 : 30),
+	);
 	ipcMain.handle("dashboard:recentlyLearned", () =>
 		getRecentlyLearnedConcepts(),
 	);

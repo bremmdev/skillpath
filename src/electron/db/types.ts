@@ -203,6 +203,41 @@ export type DashboardStats = {
   longestStreak: number;
 };
 
+export type LearningFocusRange = 30 | 90;
+
+export type LearningFocusBucket = {
+  startDate: string;
+  endDate: string;
+  total: number;
+  added: number;
+  statusChanges: number;
+  categoryEvents: Record<string, number>;
+};
+
+export type LearningFocusCategory = {
+  name: string;
+  events: number;
+  previousEvents: number;
+  added: number;
+  statusChanges: number;
+  share: number;
+  shareDelta: number | null;
+};
+
+// Aggregated concept touches behind the dashboard's learning-focus view. An
+// initial status event represents a concept being added; later events represent
+// status changes. Multiple events for one concept on one UTC day count once.
+export type LearningFocus = {
+  rangeDays: LearningFocusRange;
+  totalEvents: number;
+  previousTotalEvents: number;
+  totalDelta: number | null;
+  added: number;
+  statusChanges: number;
+  categories: LearningFocusCategory[];
+  buckets: LearningFocusBucket[];
+};
+
 // A row in the "Recently learned" list (see getRecentlyLearnedConcepts()).
 // `createdAt` is the raw ISO timestamp; the UI formats it into a relative label
 // ("2h ago", "Yesterday") at render time so it never goes stale in the cache.

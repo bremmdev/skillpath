@@ -56,9 +56,9 @@ export function RecentlyLearned() {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Recently learned</CardTitle>
+				<CardTitle>Recent activity</CardTitle>
 				<CardDescription>
-					What you logged, and the area it strengthened
+					Concepts you logged and where they belong
 				</CardDescription>
 				<CardAction>
 					<Link

@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld("api", {
 	},
 	dashboard: {
 		stats: () => ipcRenderer.invoke("dashboard:stats"),
+		learningFocus: (range: unknown) =>
+			ipcRenderer.invoke("dashboard:learningFocus", range),
 		recentlyLearned: () => ipcRenderer.invoke("dashboard:recentlyLearned"),
 	},
 	concepts: {
