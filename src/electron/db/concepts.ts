@@ -136,11 +136,9 @@ export function createConcept(input: CreateConceptInput): Concept {
 }
 
 /**
- * Updates a concept's editable fields (name, description, status, importance)
- * in place, leaving its technology/category link untouched. A status change is
- * recorded in concept_status_event and updated_at is bumped automatically by
- * the DB triggers (see ./migrations.ts), so no transaction is needed here —
- * it's a single UPDATE.
+ * Updates a concept's editable fields and optionally moves its existing link
+ * to an existing category or technology. The update and re-link share a
+ * transaction so the concept can never be left orphaned.
  *
  * Name emptiness and slug collisions get friendly errors (user-reachable from
  * the edit form); the slug check excludes this concept so re-saving with an
@@ -167,14 +165,73 @@ export function updateConcept(input: UpdateConceptInput): Concept {
 
 	const description = input.description?.trim() || null;
 
-	const { changes } = db
-		.prepare(
-			"UPDATE concept SET name = ?, slug = ?, description = ?, status = ?, importance = ? WHERE id = ?",
-		)
-		.run(name, slug, description, input.status, input.importance, input.id);
-
-	if (changes === 0) {
+	if (!db.prepare("SELECT 1 FROM concept WHERE id = ?").get(input.id)) {
 		throw new Error("Concept not found");
+	}
+
+	const currentTechnology = db
+		.prepare(
+			"SELECT technology_id AS id FROM concept_technology WHERE concept_id = ?",
+		)
+		.get(input.id) as { id: number } | undefined;
+	const currentCategory = db
+		.prepare(
+			"SELECT category_id AS id FROM concept_category WHERE concept_id = ?",
+		)
+		.get(input.id) as { id: number } | undefined;
+
+	if (!currentTechnology && !currentCategory) {
+		throw new Error("Concept has no category or technology link");
+	}
+	if (currentTechnology && currentCategory) {
+		throw new Error("Concept has both a category and technology link");
+	}
+
+	const targetTable =
+		input.link.type === "technology" ? "technology" : "category";
+	if (
+		!db.prepare(`SELECT 1 FROM ${targetTable} WHERE id = ?`).get(input.link.id)
+	) {
+		throw new Error(
+			`${input.link.type === "technology" ? "Technology" : "Category"} not found`,
+		);
+	}
+
+	db.exec("BEGIN IMMEDIATE");
+	try {
+		db.prepare(
+			"UPDATE concept SET name = ?, slug = ?, description = ?, status = ?, importance = ? WHERE id = ?",
+		).run(name, slug, description, input.status, input.importance, input.id);
+
+		const currentLink = currentTechnology
+			? { type: "technology" as const, id: currentTechnology.id }
+			: { type: "category" as const, id: currentCategory?.id };
+		if (
+			currentLink.type !== input.link.type ||
+			currentLink.id !== input.link.id
+		) {
+			db.prepare("DELETE FROM concept_technology WHERE concept_id = ?").run(
+				input.id,
+			);
+			db.prepare("DELETE FROM concept_category WHERE concept_id = ?").run(
+				input.id,
+			);
+
+			if (input.link.type === "technology") {
+				db.prepare(
+					"INSERT INTO concept_technology (concept_id, technology_id) VALUES (?, ?)",
+				).run(input.id, input.link.id);
+			} else {
+				db.prepare(
+					"INSERT INTO concept_category (concept_id, category_id) VALUES (?, ?)",
+				).run(input.id, input.link.id);
+			}
+		}
+
+		db.exec("COMMIT");
+	} catch (error) {
+		db.exec("ROLLBACK");
+		throw error;
 	}
 
 	return db

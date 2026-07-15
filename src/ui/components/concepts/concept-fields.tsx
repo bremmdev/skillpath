@@ -5,8 +5,8 @@ import { Textarea } from "@/ui/components/ui/textarea";
 import { conceptStatuses, statusMeta } from "@/ui/data/browse";
 import { cn } from "@/ui/lib/utils";
 
-// Fields shared by the log (create) and edit concept forms. The "belongs to"
-// picker lives only in the log form, since editing doesn't re-parent a concept.
+// Fields shared by the log (create) and edit concept forms. Link pickers stay in
+// their dialogs because only creation allows adding a new technology.
 
 // Electron prefixes rejections that cross IPC with "Error invoking remote
 // method 'concepts:create': Error: …" — strip that down to the real message.

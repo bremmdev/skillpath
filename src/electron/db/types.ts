@@ -92,6 +92,11 @@ export type ConceptLink =
   | { type: "category"; id: number }
   | { type: "newTechnology"; technology: NewTechnologyInput };
 
+export type ExistingConceptLink = Exclude<
+  ConceptLink,
+  { type: "newTechnology" }
+>;
+
 export type CreateConceptInput = {
   name: string;
   description?: string | null;
@@ -100,16 +105,16 @@ export type CreateConceptInput = {
   link: ConceptLink;
 };
 
-// Input for updateConcept() (see ./concepts.ts). Identifies the concept by id
-// and replaces its editable fields; the concept's technology/category link is
-// not touched here (re-parenting is a separate operation). A null/absent
-// description clears any existing notes.
+// Input for updateConcept() (see ./concepts.ts). The link may move to any
+// existing category or technology; unlike creation, it cannot create a new
+// technology. A null/absent description clears any existing notes.
 export type UpdateConceptInput = {
   id: number;
   name: string;
   description?: string | null;
   status: ConceptStatus;
   importance: number;
+  link: ExistingConceptLink;
 };
 
 // --- junction tables --------------------------------------------------------
@@ -162,6 +167,7 @@ export type SkillTreeConcept = {
   description: string | null;
   status: ConceptStatus;
   importance: number;
+  link: ExistingConceptLink;
 };
 
 export type SkillTreeTechnology = {

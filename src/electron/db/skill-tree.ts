@@ -1,6 +1,7 @@
 import { getDatabase } from "./index.js";
 import type {
 	ConceptStatus,
+	ExistingConceptLink,
 	SkillTreeCategory,
 	SkillTreeConcept,
 	SkillTreeTechnology,
@@ -63,8 +64,21 @@ export function getSkillTree(): SkillTreeCategory[] {
 		.prepare("SELECT concept_id, category_id FROM concept_category")
 		.all() as { concept_id: number; category_id: number }[];
 
+	const linkByConceptId = new Map<number, ExistingConceptLink>();
+	for (const { concept_id, technology_id } of conceptTechLinks) {
+		linkByConceptId.set(concept_id, {
+			type: "technology",
+			id: technology_id,
+		});
+	}
+	for (const { concept_id, category_id } of conceptCategoryLinks) {
+		linkByConceptId.set(concept_id, { type: "category", id: category_id });
+	}
+
 	const conceptById = new Map<number, SkillTreeConcept>();
 	for (const c of concepts) {
+		const link = linkByConceptId.get(c.id);
+		if (!link) continue;
 		conceptById.set(c.id, {
 			id: `concept-${c.id}`,
 			name: c.name,
@@ -72,6 +86,7 @@ export function getSkillTree(): SkillTreeCategory[] {
 			description: c.description,
 			status: c.status,
 			importance: c.importance,
+			link,
 		});
 	}
 
