@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestRouteImport } from './routes/test'
+import { Route as SkillMapRouteImport } from './routes/skill-map'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const TestRoute = TestRouteImport.update({
   id: '/test',
   path: '/test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkillMapRoute = SkillMapRouteImport.update({
+  id: '/skill-map',
+  path: '/skill-map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsightsRoute = InsightsRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/browse': typeof BrowseRoute
   '/insights': typeof InsightsRoute
+  '/skill-map': typeof SkillMapRoute
   '/test': typeof TestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/browse': typeof BrowseRoute
   '/insights': typeof InsightsRoute
+  '/skill-map': typeof SkillMapRoute
   '/test': typeof TestRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/browse': typeof BrowseRoute
   '/insights': typeof InsightsRoute
+  '/skill-map': typeof SkillMapRoute
   '/test': typeof TestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/browse' | '/insights' | '/test'
+  fullPaths: '/' | '/browse' | '/insights' | '/skill-map' | '/test'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/browse' | '/insights' | '/test'
-  id: '__root__' | '/' | '/browse' | '/insights' | '/test'
+  to: '/' | '/browse' | '/insights' | '/skill-map' | '/test'
+  id: '__root__' | '/' | '/browse' | '/insights' | '/skill-map' | '/test'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BrowseRoute: typeof BrowseRoute
   InsightsRoute: typeof InsightsRoute
+  SkillMapRoute: typeof SkillMapRoute
   TestRoute: typeof TestRoute
 }
 
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/test'
       fullPath: '/test'
       preLoaderRoute: typeof TestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skill-map': {
+      id: '/skill-map'
+      path: '/skill-map'
+      fullPath: '/skill-map'
+      preLoaderRoute: typeof SkillMapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insights': {
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BrowseRoute: BrowseRoute,
   InsightsRoute: InsightsRoute,
+  SkillMapRoute: SkillMapRoute,
   TestRoute: TestRoute,
 }
 export const routeTree = rootRouteImport

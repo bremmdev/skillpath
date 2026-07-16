@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { GreetingHeader } from "@/ui/components/dashboard/greeting-header";
-import { KnowledgeMap } from "@/ui/components/dashboard/knowledge-map";
 import { LearningFocus } from "@/ui/components/dashboard/learning-focus";
 import { RecentlyLearned } from "@/ui/components/dashboard/recently-learned";
 import { StatsOverview } from "@/ui/components/dashboard/stats-overview";
@@ -48,10 +47,7 @@ function Home() {
 
 			<LearningFocus />
 
-			<section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-				<RecentlyLearned />
-				<KnowledgeMap />
-			</section>
+			<RecentlyLearned />
 		</>
 	);
 }
