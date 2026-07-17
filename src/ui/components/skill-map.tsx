@@ -42,6 +42,7 @@ const CHILD_TECH_GAP = 130;
 const CONCEPT_HEIGHT = 32;
 const CONCEPTS_PER_RING = 6;
 const CONCEPT_POPOVER_DELAY = 1_000;
+const CONCEPT_FADE_DURATION = 180;
 
 type Point = {
 	x: number;
@@ -588,6 +589,48 @@ function buildGraphLayout(categories: SkillTreeCategory[]): GraphLayout {
 	};
 }
 
+function linkedConceptsByNode(
+	nodes: SkillMapNode[],
+	edges: Edge[],
+): Map<string, Set<string>> {
+	const nodeById = new Map(nodes.map((node) => [node.id, node]));
+	const childrenById = new Map<string, string[]>();
+
+	for (const edge of edges) {
+		const children = childrenById.get(edge.source) ?? [];
+		children.push(edge.target);
+		childrenById.set(edge.source, children);
+	}
+
+	const linkedConcepts = new Map<string, Set<string>>();
+
+	for (const node of nodes) {
+		if (node.type === "concept") continue;
+
+		const concepts = new Set<string>();
+		const visited = new Set<string>();
+		const pending = [...(childrenById.get(node.id) ?? [])];
+
+		while (pending.length > 0) {
+			const childId = pending.pop();
+			if (!childId || visited.has(childId)) continue;
+			visited.add(childId);
+
+			const child = nodeById.get(childId);
+			if (child?.type === "concept") {
+				concepts.add(childId);
+				continue;
+			}
+
+			pending.push(...(childrenById.get(childId) ?? []));
+		}
+
+		linkedConcepts.set(node.id, concepts);
+	}
+
+	return linkedConcepts;
+}
+
 function NodeHandles() {
 	const sides = [
 		["top", Position.Top],
@@ -618,7 +661,7 @@ function NodeHandles() {
 
 function CategoryNode({ data }: NodeProps<SkillMapNode>) {
 	return (
-		<div className="relative flex size-full flex-col items-center justify-center overflow-hidden rounded-full border border-chart-5/40 bg-gradient-to-br from-chart-2 via-brand to-chart-4 px-5 text-center text-brand-foreground shadow-[0_24px_55px_-28px_var(--brand)] ring-8 ring-chart-1/15">
+		<div className="relative flex size-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border border-chart-5/40 bg-gradient-to-br from-chart-2 via-brand to-chart-4 px-5 text-center text-brand-foreground shadow-[0_24px_55px_-28px_var(--brand)] ring-8 ring-chart-1/15">
 			<div className="absolute -top-1/3 -left-1/4 size-3/4 rounded-full bg-white/15 blur-xl" />
 			<p className="relative font-heading text-[10px] font-semibold tracking-[0.2em] uppercase opacity-70">
 				Category
@@ -638,7 +681,7 @@ function TechnologyNode({ data }: NodeProps<SkillMapNode>) {
 	return (
 		<div
 			className={cn(
-				"relative flex size-full flex-col items-center justify-center rounded-full border px-4 text-center shadow-[0_18px_42px_-30px_var(--foreground)] backdrop-blur-sm",
+				"relative flex size-full cursor-pointer flex-col items-center justify-center rounded-full border px-4 text-center shadow-[0_18px_42px_-30px_var(--foreground)] backdrop-blur-sm",
 				data.isSubtechnology
 					? "border-chart-2/35 bg-chart-1/20 ring-4 ring-chart-1/10"
 					: "border-chart-2/45 bg-card/95 ring-6 ring-chart-1/12",
@@ -854,6 +897,9 @@ function CategoryPicker({
 export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 	const layout = useMemo(() => buildGraphLayout(categories), [categories]);
 	const [nodes, setNodes, onNodesChange] = useNodesState(layout.nodes);
+	const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(
+		() => new Set(),
+	);
 	const flowInstance = useRef<ReactFlowInstance<SkillMapNode, Edge> | null>(
 		null,
 	);
@@ -864,6 +910,63 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 	useEffect(() => {
 		setNodes(layout.nodes);
 	}, [layout.nodes, setNodes]);
+
+	const linkedConcepts = useMemo(
+		() => linkedConceptsByNode(layout.nodes, layout.edges),
+		[layout.edges, layout.nodes],
+	);
+	const hiddenConceptIds = useMemo(() => {
+		const hidden = new Set<string>();
+
+		for (const nodeId of collapsedNodeIds) {
+			for (const conceptId of linkedConcepts.get(nodeId) ?? []) {
+				hidden.add(conceptId);
+			}
+		}
+
+		return hidden;
+	}, [collapsedNodeIds, linkedConcepts]);
+	const visibleNodes = useMemo<SkillMapNode[]>(
+		() =>
+			nodes.map((node) => {
+				if (node.type !== "concept") return node;
+
+				const isHidden = hiddenConceptIds.has(node.id);
+				return {
+					...node,
+					style: {
+						...node.style,
+						opacity: isHidden ? 0 : 1,
+						pointerEvents: isHidden ? "none" : "auto",
+						transition: `opacity ${CONCEPT_FADE_DURATION}ms ease`,
+					},
+				};
+			}),
+		[hiddenConceptIds, nodes],
+	);
+	const visibleEdges = useMemo<Edge[]>(
+		() =>
+			layout.edges.map((edge) => ({
+				...edge,
+				style: {
+					...edge.style,
+					opacity: hiddenConceptIds.has(edge.target) ? 0 : 1,
+					transition: `opacity ${CONCEPT_FADE_DURATION}ms ease`,
+				},
+			})),
+		[hiddenConceptIds, layout.edges],
+	);
+
+	const toggleLinkedConcepts = (node: SkillMapNode) => {
+		if (node.type === "concept") return;
+
+		setCollapsedNodeIds((current) => {
+			const next = new Set(current);
+			if (next.has(node.id)) next.delete(node.id);
+			else next.add(node.id);
+			return next;
+		});
+	};
 
 	const focusCategory = (categoryId: string) => {
 		setSelectedCategoryId(categoryId);
@@ -897,10 +1000,13 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 	return (
 		<div className="relative h-[calc(100vh-12rem)] min-h-[620px] overflow-hidden rounded-3xl border bg-[radial-gradient(circle_at_center,var(--card),var(--muted))] shadow-sm">
 			<ReactFlow
-				nodes={nodes}
-				edges={layout.edges}
+				nodes={visibleNodes}
+				edges={visibleEdges}
 				nodeTypes={nodeTypes}
 				onNodesChange={onNodesChange}
+				onNodeClick={(_, node) => {
+					toggleLinkedConcepts(node);
+				}}
 				onInit={(instance) => {
 					flowInstance.current = instance;
 				}}
