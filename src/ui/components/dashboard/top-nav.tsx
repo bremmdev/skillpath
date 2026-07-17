@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Search } from "lucide-react";
+import skillpathIcon from "@/assets/icon.svg";
 import { LogConceptDialog } from "@/ui/components/concepts/log-concept-dialog";
 import { Input } from "@/ui/components/ui/input";
 import { cn } from "@/ui/lib/utils";
@@ -16,9 +17,12 @@ export function TopNav() {
 		<header className="bg-background sticky top-0 z-30 border-b">
 			<div className="flex h-16 w-full items-center gap-6 px-6">
 				<div className="flex items-center gap-2.5">
-					<span className="bg-brand text-brand-foreground flex size-7 items-center justify-center rounded-md text-sm font-bold">
-						S
-					</span>
+					<img
+						src={skillpathIcon}
+						alt=""
+						className="size-7 rounded-md"
+						aria-hidden="true"
+					/>
 					<span className="text-[15px] font-semibold tracking-tight">
 						Skillpath
 					</span>
