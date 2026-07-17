@@ -16,7 +16,7 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Layers3, Map as MapIcon, MousePointer2 } from "lucide-react";
+import { Layers3, Map as MapIcon, MousePointer2, Pencil } from "lucide-react";
 import {
 	type CSSProperties,
 	useEffect,
@@ -32,6 +32,7 @@ import type {
 	SkillTreeConcept,
 	SkillTreeTechnology,
 } from "#/electron/db/types";
+import { EditConceptDialog } from "@/ui/components/concepts/edit-concept-dialog";
 import { cn } from "@/ui/lib/utils";
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
@@ -53,6 +54,7 @@ type SkillMapNodeData = {
 	status?: ConceptStatus;
 	isSubtechnology?: boolean;
 	description?: string | null;
+	concept?: SkillTreeConcept;
 };
 
 type SkillMapNode = Node<SkillMapNodeData>;
@@ -129,13 +131,14 @@ function conceptNodeAtCenter(
 			conceptCount: 0,
 			status: concept.status,
 			description: concept.description,
+			concept,
 		},
 		ariaLabel: concept.name,
 	};
 }
 
 function estimatedConceptWidth(name: string) {
-	return 42 + Array.from(name).length * 6.4;
+	return 66 + Array.from(name).length * 6.4;
 }
 
 function handleSides(
@@ -672,6 +675,7 @@ function ConceptNode({ data }: NodeProps<SkillMapNode>) {
 	const conceptRef = useRef<HTMLDivElement>(null);
 	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [anchor, setAnchor] = useState<DOMRect | null>(null);
+	const [editing, setEditing] = useState(false);
 
 	const hideDescription = () => {
 		if (timerRef.current) clearTimeout(timerRef.current);
@@ -731,6 +735,24 @@ function ConceptNode({ data }: NodeProps<SkillMapNode>) {
 				<span className="whitespace-nowrap text-xs font-medium">
 					{data.name}
 				</span>
+				{data.concept && (
+					<button
+						type="button"
+						onPointerDown={(event) => {
+							event.stopPropagation();
+							hideDescription();
+						}}
+						onClick={(event) => {
+							event.stopPropagation();
+							setEditing(true);
+						}}
+						aria-label={`Edit ${data.name}`}
+						title="Edit concept"
+						className="nodrag nopan text-muted-foreground/70 hover:text-foreground shrink-0 rounded-sm transition-colors"
+					>
+						<Pencil className="size-4" />
+					</button>
+				)}
 				<NodeHandles />
 			</div>
 			{anchor &&
@@ -750,6 +772,13 @@ function ConceptNode({ data }: NodeProps<SkillMapNode>) {
 					</div>,
 					document.body,
 				)}
+			{data.concept && (
+				<EditConceptDialog
+					concept={data.concept}
+					open={editing}
+					onOpenChange={setEditing}
+				/>
+			)}
 		</>
 	);
 }
