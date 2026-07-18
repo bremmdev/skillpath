@@ -927,10 +927,7 @@ function ConceptNode({ data }: NodeProps<SkillMapNode>) {
 				onPointerEnter={scheduleDescription}
 				onPointerLeave={hideDescription}
 				onPointerDown={hideDescription}
-				className={cn(
-					"relative flex h-full w-max items-center gap-2 rounded-full bg-background/78 px-3 text-foreground shadow-[0_8px_24px_-18px_var(--foreground)] backdrop-blur-sm",
-					data.color ? cn("ring-2", data.color.ring) : "ring-1 ring-border/70",
-				)}
+				className="relative flex h-full w-max items-center gap-2 rounded-full bg-background/78 px-3 text-foreground shadow-[0_8px_24px_-18px_var(--foreground)] ring-1 ring-slate-200 backdrop-blur-sm"
 			>
 				<span
 					className={cn(
