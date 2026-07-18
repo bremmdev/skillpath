@@ -49,6 +49,17 @@ type Point = {
 	y: number;
 };
 
+type SubtechnologyColor = {
+	/** Border utility for the subtechnology node, e.g. "border-purple-600". */
+	border: string;
+	/** Light background utility for the subtechnology node, e.g. "bg-purple-50". */
+	background: string;
+	/** Ring utility for a linked concept's border, e.g. "ring-purple-600". */
+	ring: string;
+	/** Background utility for a linked concept's dot, e.g. "bg-purple-600". */
+	dot: string;
+};
+
 type SkillMapNodeData = {
 	name: string;
 	conceptCount: number;
@@ -56,6 +67,8 @@ type SkillMapNodeData = {
 	isSubtechnology?: boolean;
 	description?: string | null;
 	concept?: SkillTreeConcept;
+	/** Assigned only to subtechnology nodes and their linked concepts. */
+	color?: SubtechnologyColor;
 };
 
 type SkillMapNode = Node<SkillMapNodeData>;
@@ -79,6 +92,92 @@ const statusColor: Record<ConceptStatus, string> = {
 	learning: "bg-chart-4",
 	learned: "bg-chart-2",
 };
+
+// Static, ordered palette of Tailwind -600 colors used to tell sibling
+// subtechnologies apart. rose-600 leads because it is the theme color. The full
+// class strings are written out literally so Tailwind's compiler emits them.
+// Subtechnologies within a technology are assigned a color by alphabetical name
+// order (see assignSubtechnologyColors), so the mapping is stable across reloads.
+const SUBTECHNOLOGY_COLORS: readonly SubtechnologyColor[] = [
+	{
+		border: "border-purple-500",
+		background: "bg-purple-50",
+		ring: "ring-purple-500",
+		dot: "bg-purple-500",
+	},
+	{
+		border: "border-green-500",
+		background: "bg-green-50",
+		ring: "ring-green-500",
+		dot: "bg-green-500",
+	},
+	{
+		border: "border-blue-500",
+		background: "bg-blue-50",
+		ring: "ring-blue-500",
+		dot: "bg-blue-500",
+	},
+	{
+		border: "border-mauve-500",
+		background: "bg-mauve-50",
+		ring: "ring-mauve-500",
+		dot: "bg-mauve-500",
+	},
+	{
+		border: "border-fuchsia-500",
+		background: "bg-fuchsia-50",
+		ring: "ring-fuchsia-500",
+		dot: "bg-fuchsia-500",
+	},
+	{
+		border: "border-slate-500",
+		background: "bg-slate-50",
+		ring: "ring-slate-500",
+		dot: "bg-slate-500",
+	},
+	{
+		border: "border-orange-500",
+		background: "bg-orange-50",
+		ring: "ring-orange-500",
+		dot: "bg-orange-500",
+	},
+	{
+		border: "border-indigo-500",
+		background: "bg-indigo-50",
+		ring: "ring-indigo-500",
+		dot: "bg-indigo-500",
+	},
+	{
+		border: "border-sky-500",
+		background: "bg-sky-50",
+		ring: "ring-sky-500",
+		dot: "bg-sky-500",
+	},
+	{
+		border: "border-amber-500",
+		background: "bg-amber-50",
+		ring: "ring-amber-500",
+		dot: "bg-amber-500",
+	},
+	{
+		border: "border-cyan-500",
+		background: "bg-cyan-50",
+		ring: "ring-cyan-500",
+		dot: "bg-cyan-500",
+	},
+	{
+		border: "border-teal-500",
+		background: "bg-teal-50",
+		ring: "ring-teal-500",
+		dot: "bg-teal-500",
+	},
+	{
+		border: "border-lime-500",
+		background: "bg-lime-50",
+		ring: "ring-lime-500",
+		dot: "bg-lime-500",
+	},
+];
 
 function clamp(value: number, minimum: number, maximum: number) {
 	return Math.min(Math.max(value, minimum), maximum);
@@ -116,6 +215,7 @@ function conceptNodeAtCenter(
 	id: string,
 	center: Point,
 	concept: SkillTreeConcept,
+	color: SubtechnologyColor | undefined,
 ): SkillMapNode {
 	const estimatedWidth = estimatedConceptWidth(concept.name);
 
@@ -133,6 +233,7 @@ function conceptNodeAtCenter(
 			status: concept.status,
 			description: concept.description,
 			concept,
+			color,
 		},
 		ariaLabel: concept.name,
 	};
@@ -248,6 +349,45 @@ function categoryTechnologyRoots(
 	});
 }
 
+// Maps each subtechnology id to a stable color. Colors are scoped per root
+// technology: within one technology tree, all descendant subtechnologies are
+// sorted by name and assigned palette colors in order, so siblings always
+// differ and the same tree always looks the same. Root (non-sub) technologies
+// are absent from the map and fall back to the theme color.
+function assignSubtechnologyColors(
+	categories: SkillTreeCategory[],
+): Map<string, SubtechnologyColor> {
+	const colors = new Map<string, SubtechnologyColor>();
+
+	const collectDescendants = (
+		technology: SkillTreeTechnology,
+		into: SkillTreeTechnology[],
+	) => {
+		for (const child of technology.children ?? []) {
+			into.push(child);
+			collectDescendants(child, into);
+		}
+	};
+
+	for (const category of categories) {
+		for (const root of categoryTechnologyRoots(category)) {
+			const subtechnologies: SkillTreeTechnology[] = [];
+			collectDescendants(root, subtechnologies);
+
+			subtechnologies
+				.sort((first, second) => first.name.localeCompare(second.name))
+				.forEach((subtechnology, index) => {
+					colors.set(
+						subtechnology.id,
+						SUBTECHNOLOGY_COLORS[index % SUBTECHNOLOGY_COLORS.length],
+					);
+				});
+		}
+	}
+
+	return colors;
+}
+
 function categoryDiameter(conceptCount: number) {
 	return clamp(144 + Math.sqrt(conceptCount) * 24, 144, 230);
 }
@@ -278,6 +418,7 @@ function addConceptOrbit({
 	parentRadius,
 	outwardAngle,
 	idPrefix,
+	color,
 	nodes,
 	edges,
 }: {
@@ -287,6 +428,8 @@ function addConceptOrbit({
 	parentRadius: number;
 	outwardAngle: number;
 	idPrefix: string;
+	/** Color inherited from a subtechnology parent; undefined otherwise. */
+	color: SubtechnologyColor | undefined;
 	nodes: SkillMapNode[];
 	edges: Edge[];
 }) {
@@ -309,7 +452,7 @@ function addConceptOrbit({
 		const center = pointOnRay(parentCenter, distance, angle);
 		const id = `${idPrefix}:concept:${concept.id}:${index}`;
 
-		nodes.push(conceptNodeAtCenter(id, center, concept));
+		nodes.push(conceptNodeAtCenter(id, center, concept, color));
 		edges.push(
 			graphEdge(
 				`${parentId}->${id}`,
@@ -332,6 +475,7 @@ function addTechnologyBranch({
 	angle,
 	depth,
 	path,
+	colors,
 	nodes,
 	edges,
 }: {
@@ -343,10 +487,12 @@ function addTechnologyBranch({
 	angle: number;
 	depth: number;
 	path: string;
+	colors: Map<string, SubtechnologyColor>;
 	nodes: SkillMapNode[];
 	edges: Edge[];
 }) {
 	const isSubtechnology = depth > 0;
+	const color = isSubtechnology ? colors.get(technology.id) : undefined;
 	const conceptCount = uniqueTechnologyConceptCount(technology);
 	const diameter = technologyDiameter(
 		conceptCount,
@@ -364,6 +510,7 @@ function addTechnologyBranch({
 			name: technology.name,
 			conceptCount,
 			isSubtechnology,
+			color,
 		}),
 	);
 	edges.push(
@@ -399,6 +546,7 @@ function addTechnologyBranch({
 			angle: childAngle,
 			depth: depth + 1,
 			path: `${path}.${index}`,
+			colors,
 			nodes,
 			edges,
 		});
@@ -411,6 +559,7 @@ function addTechnologyBranch({
 		parentRadius: radius,
 		outwardAngle: children.length > 0 ? angle + Math.PI / 2 : angle,
 		idPrefix: id,
+		color,
 		nodes,
 		edges,
 	});
@@ -419,6 +568,7 @@ function addTechnologyBranch({
 function layoutCategory(
 	category: SkillTreeCategory,
 	index: number,
+	colors: Map<string, SubtechnologyColor>,
 	nodes: SkillMapNode[],
 	edges: Edge[],
 ) {
@@ -451,6 +601,7 @@ function layoutCategory(
 			angle,
 			depth: 0,
 			path: `${rootIndex}`,
+			colors,
 			nodes,
 			edges,
 		});
@@ -467,6 +618,7 @@ function layoutCategory(
 		parentRadius: radius,
 		outwardAngle: directConceptAngle,
 		idPrefix: categoryId,
+		color: undefined,
 		nodes,
 		edges,
 	});
@@ -577,9 +729,10 @@ function alignEdgeHandles(edges: Edge[], nodes: SkillMapNode[]): Edge[] {
 function buildGraphLayout(categories: SkillTreeCategory[]): GraphLayout {
 	const nodes: SkillMapNode[] = [];
 	const edges: Edge[] = [];
+	const colors = assignSubtechnologyColors(categories);
 
 	for (const [index, category] of categories.entries()) {
-		layoutCategory(category, index, nodes, edges);
+		layoutCategory(category, index, colors, nodes, edges);
 	}
 
 	const resolvedNodes = resolveConceptCollisions(nodes);
@@ -683,8 +836,12 @@ function TechnologyNode({ data }: NodeProps<SkillMapNode>) {
 			className={cn(
 				"relative flex size-full cursor-pointer flex-col items-center justify-center rounded-full border px-4 text-center shadow-[0_18px_42px_-30px_var(--foreground)] backdrop-blur-sm",
 				data.isSubtechnology
-					? "border-chart-2/35 bg-chart-1/20 ring-4 ring-chart-1/10"
-					: "border-chart-2/45 bg-card/95 ring-6 ring-chart-1/12",
+					? "bg-chart-1/20 ring-4 ring-chart-1/10"
+					: "border-2 border-rose-500 bg-card/95 ring-6 ring-chart-1/12",
+				data.isSubtechnology &&
+					(data.color
+						? cn("border-2", data.color.border, data.color.background)
+						: "border-chart-2/35"),
 			)}
 		>
 			<div
@@ -770,10 +927,16 @@ function ConceptNode({ data }: NodeProps<SkillMapNode>) {
 				onPointerEnter={scheduleDescription}
 				onPointerLeave={hideDescription}
 				onPointerDown={hideDescription}
-				className="relative flex h-full w-max items-center gap-2 rounded-full bg-background/78 px-3 text-foreground shadow-[0_8px_24px_-18px_var(--foreground)] ring-1 ring-border/70 backdrop-blur-sm"
+				className={cn(
+					"relative flex h-full w-max items-center gap-2 rounded-full bg-background/78 px-3 text-foreground shadow-[0_8px_24px_-18px_var(--foreground)] backdrop-blur-sm",
+					data.color ? cn("ring-2", data.color.ring) : "ring-1 ring-border/70",
+				)}
 			>
 				<span
-					className={cn("size-2 shrink-0 rounded-full", statusColor[status])}
+					className={cn(
+						"size-2 shrink-0 rounded-full",
+						data.color ? data.color.dot : statusColor[status],
+					)}
 				/>
 				<span className="whitespace-nowrap text-xs font-medium">
 					{data.name}
