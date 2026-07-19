@@ -36,10 +36,10 @@ export const Route = createFileRoute("/")({
 			</button>
 		</div>
 	),
-	component: Home,
+	component: OverviewRoute,
 });
 
-function Home() {
+function OverviewRoute() {
 	return (
 		<>
 			<GreetingHeader />

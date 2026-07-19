@@ -799,7 +799,7 @@ function NodeHandles() {
 			type="target"
 			position={position}
 			isConnectable={false}
-			className="!size-1 !border-0 !bg-transparent"
+			className="size-1! border-0! bg-transparent!"
 		/>,
 		<Handle
 			key={`source-${side}`}
@@ -807,14 +807,14 @@ function NodeHandles() {
 			type="source"
 			position={position}
 			isConnectable={false}
-			className="!size-1 !border-0 !bg-transparent"
+			className="size-1! border-0! bg-transparent!"
 		/>,
 	]);
 }
 
 function CategoryNode({ data }: NodeProps<SkillMapNode>) {
 	return (
-		<div className="relative flex size-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border border-chart-5/40 bg-gradient-to-br from-chart-2 via-brand to-chart-4 px-5 text-center text-brand-foreground shadow-[0_24px_55px_-28px_var(--brand)] ring-8 ring-chart-1/15">
+		<div className="relative flex size-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-full border border-chart-5/40 bg-linear-to-br from-chart-2 via-brand to-chart-4 px-5 text-center text-brand-foreground shadow-[0_24px_55px_-28px_var(--brand)] ring-8 ring-chart-1/15">
 			<div className="absolute -top-1/3 -left-1/4 size-3/4 rounded-full bg-white/15 blur-xl" />
 			<p className="relative font-heading text-[10px] font-semibold tracking-[0.2em] uppercase opacity-70">
 				Category
@@ -857,7 +857,7 @@ function TechnologyNode({ data }: NodeProps<SkillMapNode>) {
 			<p className="max-w-full text-[9px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
 				{data.isSubtechnology ? "Subtechnology" : "Technology"}
 			</p>
-			<p className="mt-1 max-w-full break-words text-sm leading-tight font-semibold">
+			<p className="mt-1 max-w-full wrap-break-word text-sm leading-tight font-semibold">
 				{data.name}
 			</p>
 			{data.conceptCount > 0 && (
@@ -1203,7 +1203,7 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 				<Controls
 					position="bottom-left"
 					showInteractive={false}
-					className="!overflow-hidden !rounded-xl !border !bg-background/90 !shadow-sm"
+					className="overflow-hidden! rounded-xl! border! bg-background/90! shadow-sm!"
 				/>
 				<MiniMap
 					position="bottom-right"
@@ -1216,7 +1216,7 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 					}}
 					nodeStrokeColor="var(--border)"
 					maskColor="color-mix(in oklch, var(--background) 72%, transparent)"
-					className="!overflow-hidden !rounded-xl !border !bg-background/90 !shadow-sm"
+					className="overflow-hidden! rounded-xl! border! bg-background/90! shadow-sm!"
 				/>
 			</ReactFlow>
 		</div>
