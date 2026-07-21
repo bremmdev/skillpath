@@ -16,7 +16,14 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Layers3, Map as MapIcon, MousePointer2, Pencil } from "lucide-react";
+import {
+	Layers3,
+	Map as MapIcon,
+	MousePointer2,
+	Pencil,
+	Search,
+	X,
+} from "lucide-react";
 import {
 	type CSSProperties,
 	useEffect,
@@ -33,6 +40,7 @@ import type {
 	SkillTreeTechnology,
 } from "#/electron/db/types";
 import { EditConceptDialog } from "@/ui/components/concepts/edit-concept-dialog";
+import { Input } from "@/ui/components/ui/input";
 import { cn } from "@/ui/lib/utils";
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
@@ -69,7 +77,15 @@ type SkillMapNodeData = {
 	concept?: SkillTreeConcept;
 	/** Assigned only to subtechnology nodes and their linked concepts. */
 	color?: SubtechnologyColor;
+	/** True while this node is the current unique search match. */
+	highlighted?: boolean;
 };
+
+// Amber halo used to flag the current search match. Amber is otherwise unused by
+// node status/subtechnology colors, so it reads unambiguously as "your result".
+// twMerge lets these ring/shadow utilities override each node's defaults.
+const HIGHLIGHT_GLOW =
+	"z-10 ring-4 ring-amber-400 shadow-[0_0_0_3px_rgba(251,191,36,0.35),0_0_34px_10px_rgba(251,191,36,0.5)]";
 
 type SkillMapNode = Node<SkillMapNodeData>;
 
@@ -842,6 +858,7 @@ function TechnologyNode({ data }: NodeProps<SkillMapNode>) {
 					(data.color
 						? cn("border-2", data.color.border, data.color.background)
 						: "border-chart-2/35"),
+				data.highlighted && HIGHLIGHT_GLOW,
 			)}
 		>
 			<div
@@ -927,7 +944,10 @@ function ConceptNode({ data }: NodeProps<SkillMapNode>) {
 				onPointerEnter={scheduleDescription}
 				onPointerLeave={hideDescription}
 				onPointerDown={hideDescription}
-				className="relative flex h-full w-max items-center gap-2 rounded-full bg-background/78 px-3 text-foreground shadow-[0_8px_24px_-18px_var(--foreground)] ring-1 ring-slate-200 backdrop-blur-sm"
+				className={cn(
+					"relative flex h-full w-max items-center gap-2 rounded-full bg-background/78 px-3 text-foreground shadow-[0_8px_24px_-18px_var(--foreground)] ring-1 ring-slate-200 backdrop-blur-sm",
+					data.highlighted && HIGHLIGHT_GLOW,
+				)}
 			>
 				<span
 					className={cn(
@@ -1054,6 +1074,55 @@ function CategoryPicker({
 	);
 }
 
+function SearchBar({
+	query,
+	onQueryChange,
+	matchCount,
+}: {
+	query: string;
+	onQueryChange: (value: string) => void;
+	/** Number of nodes the trimmed query matches; the map only jumps when 1. */
+	matchCount: number;
+}) {
+	const trimmed = query.trim();
+
+	return (
+		<div className="pointer-events-auto w-60 rounded-xl border bg-background/88 p-1.5 shadow-sm backdrop-blur-md">
+			<div className="flex items-center gap-2 px-1.5">
+				<Search className="size-3.5 shrink-0 text-muted-foreground" />
+				<Input
+					type="search"
+					value={query}
+					onChange={(event) => onQueryChange(event.target.value)}
+					onPointerDown={(event) => event.stopPropagation()}
+					placeholder="Search concepts & tech…"
+					aria-label="Search the skill map"
+					className="nodrag nopan h-8 border-b-transparent px-0 text-xs focus-visible:border-b-transparent [&::-webkit-search-cancel-button]:hidden"
+				/>
+				{trimmed && (
+					<button
+						type="button"
+						onPointerDown={(event) => event.stopPropagation()}
+						onClick={() => onQueryChange("")}
+						aria-label="Clear search"
+						title="Clear search"
+						className="nodrag nopan shrink-0 rounded-sm text-muted-foreground/70 transition-colors hover:text-foreground"
+					>
+						<X className="size-3.5" />
+					</button>
+				)}
+			</div>
+			{trimmed && matchCount !== 1 && (
+				<p className="px-1.5 pt-1 text-[10px] text-muted-foreground">
+					{matchCount === 0
+						? "No matches"
+						: `${matchCount} matches — refine to jump`}
+				</p>
+			)}
+		</div>
+	);
+}
+
 export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 	const layout = useMemo(() => buildGraphLayout(categories), [categories]);
 	const [nodes, setNodes, onNodesChange] = useNodesState(layout.nodes);
@@ -1066,6 +1135,7 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 	const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
 		null,
 	);
+	const [searchQuery, setSearchQuery] = useState("");
 
 	useEffect(() => {
 		setNodes(layout.nodes);
@@ -1086,14 +1156,78 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 
 		return hidden;
 	}, [collapsedNodeIds, linkedConcepts]);
+
+	// Technology and concept nodes are searchable by name (lowercased once here).
+	const searchableNodes = useMemo(
+		() =>
+			layout.nodes
+				.filter(
+					(node) => node.type === "technology" || node.type === "concept",
+				)
+				.map((node) => ({ id: node.id, name: node.data.name.toLowerCase() })),
+		[layout.nodes],
+	);
+	// Ids the trimmed query matches. An exact name match wins over substring
+	// matches, so typing a full name jumps even when it is a prefix of others.
+	const matchedNodeIds = useMemo(() => {
+		const query = searchQuery.trim().toLowerCase();
+		if (!query) return [] as string[];
+
+		const exact = searchableNodes.filter((node) => node.name === query);
+		const pool =
+			exact.length > 0
+				? exact
+				: searchableNodes.filter((node) => node.name.includes(query));
+		return pool.map((node) => node.id);
+	}, [searchQuery, searchableNodes]);
+	// The search only acts on an unambiguous hit; that id is the one we glow.
+	const highlightedNodeId =
+		matchedNodeIds.length === 1 ? matchedNodeIds[0] : null;
+
+	// Fly to the match only when it is unambiguous; multiple (or zero) matches do
+	// nothing. Revealing the node first un-collapses any parent hiding it.
+	useEffect(() => {
+		if (!highlightedNodeId) return;
+		const nodeId = highlightedNodeId;
+
+		setCollapsedNodeIds((current) => {
+			let changed = false;
+			const next = new Set(current);
+			for (const collapsedId of current) {
+				if (linkedConcepts.get(collapsedId)?.has(nodeId)) {
+					next.delete(collapsedId);
+					changed = true;
+				}
+			}
+			return changed ? next : current;
+		});
+
+		const instance = flowInstance.current;
+		const node = instance?.getNode(nodeId);
+		if (!instance || !node) return;
+
+		const center = nodeCenter(node);
+		void instance.setCenter(center.x, center.y, {
+			zoom: node.type === "concept" ? 1.4 : 1.1,
+			duration: 700,
+		});
+	}, [highlightedNodeId, linkedConcepts]);
+
 	const visibleNodes = useMemo<SkillMapNode[]>(
 		() =>
 			nodes.map((node) => {
-				if (node.type !== "concept") return node;
+				const highlighted = node.id === highlightedNodeId;
+
+				if (node.type !== "concept") {
+					return highlighted
+						? { ...node, data: { ...node.data, highlighted } }
+						: node;
+				}
 
 				const isHidden = hiddenConceptIds.has(node.id);
 				return {
 					...node,
+					data: highlighted ? { ...node.data, highlighted } : node.data,
 					style: {
 						...node.style,
 						opacity: isHidden ? 0 : 1,
@@ -1102,7 +1236,7 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 					},
 				};
 			}),
-		[hiddenConceptIds, nodes],
+		[hiddenConceptIds, nodes, highlightedNodeId],
 	);
 	const visibleEdges = useMemo<Edge[]>(
 		() =>
@@ -1198,6 +1332,13 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 						categories={categories}
 						selectedId={selectedCategoryId}
 						onSelect={focusCategory}
+					/>
+				</Panel>
+				<Panel position="top-right">
+					<SearchBar
+						query={searchQuery}
+						onQueryChange={setSearchQuery}
+						matchCount={matchedNodeIds.length}
 					/>
 				</Panel>
 				<Controls
