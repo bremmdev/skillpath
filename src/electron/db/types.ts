@@ -12,18 +12,16 @@ export type Category = {
   id: number;
   name: string;
   slug: string;
-  description: string | null;
-  importance: number;
   created_at: string;
   updated_at: string;
 };
 
-// id/created_at/updated_at are DB-generated; description/importance have defaults.
-export type NewCategory = Omit<
-  Category,
-  "id" | "created_at" | "updated_at" | "description" | "importance"
-> &
-  Partial<Pick<Category, "description" | "importance">>;
+// Input for createCategory() (see ./categories.ts). The category table stores
+// only a name (its slug is derived), so that is all the add-category form
+// collects.
+export type CreateCategoryInput = {
+  name: string;
+};
 
 export type Technology = {
   id: number;

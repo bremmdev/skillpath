@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getCategories } from "./db/categories.js";
+import { createCategory, getCategories } from "./db/categories.js";
 import { createConcept, updateConcept } from "./db/concepts.js";
 import {
 	getDashboardStats,
@@ -7,7 +7,11 @@ import {
 	getRecentlyLearnedConcepts,
 } from "./db/dashboard.js";
 import { getSkillTree } from "./db/skill-tree.js";
-import type { CreateConceptInput, UpdateConceptInput } from "./db/types.js";
+import type {
+	CreateCategoryInput,
+	CreateConceptInput,
+	UpdateConceptInput,
+} from "./db/types.js";
 
 // The app's IPC contract, in one place. Each ipcMain.handle here should have a
 // matching bridge method in preload.cts and a matching type in
@@ -16,6 +20,9 @@ import type { CreateConceptInput, UpdateConceptInput } from "./db/types.js";
 // Query). Call this once from main.ts after the app is ready.
 export function registerIpcHandlers() {
 	ipcMain.handle("categories:get", () => getCategories());
+	ipcMain.handle("categories:create", (_event, input: CreateCategoryInput) =>
+		createCategory(input),
+	);
 	ipcMain.handle("skillTree:get", () => getSkillTree());
 	ipcMain.handle("dashboard:stats", () => getDashboardStats());
 	ipcMain.handle("dashboard:learningFocus", (_event, range: unknown) =>

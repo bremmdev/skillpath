@@ -3,6 +3,7 @@ import { contextBridge, ipcRenderer } from "electron";
 contextBridge.exposeInMainWorld("api", {
 	categories: {
 		get: () => ipcRenderer.invoke("categories:get"),
+		create: (input: unknown) => ipcRenderer.invoke("categories:create", input),
 	},
 	skillTree: {
 		get: () => ipcRenderer.invoke("skillTree:get"),

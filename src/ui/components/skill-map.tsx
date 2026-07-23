@@ -17,6 +17,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
+	FolderPlus,
 	Layers3,
 	Map as MapIcon,
 	MousePointer2,
@@ -39,7 +40,9 @@ import type {
 	SkillTreeConcept,
 	SkillTreeTechnology,
 } from "#/electron/db/types";
+import { AddCategoryDialog } from "@/ui/components/categories/add-category-dialog";
 import { EditConceptDialog } from "@/ui/components/concepts/edit-concept-dialog";
+import { Button } from "@/ui/components/ui/button";
 import { Input } from "@/ui/components/ui/input";
 import { cn } from "@/ui/lib/utils";
 
@@ -1279,20 +1282,28 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 
 	if (categories.length === 0) {
 		return (
-			<div className="flex min-h-[620px] items-center justify-center rounded-3xl border border-dashed text-center">
+			<div className="flex min-h-155 items-center justify-center rounded-3xl border border-dashed text-center">
 				<div>
 					<MapIcon className="mx-auto size-8 text-muted-foreground/50" />
 					<p className="mt-3 text-sm font-medium">No categories yet</p>
 					<p className="mt-1 text-xs text-muted-foreground">
 						Add a category to start growing your skill map.
 					</p>
+					<AddCategoryDialog
+						trigger={
+							<Button size="sm" className="mt-4 gap-1.5">
+								<FolderPlus className="size-4" />
+								Add category
+							</Button>
+						}
+					/>
 				</div>
 			</div>
 		);
 	}
 
 	return (
-		<div className="relative h-[calc(100vh-12rem)] min-h-[620px] overflow-hidden rounded-3xl border bg-[radial-gradient(circle_at_center,var(--card),var(--muted))] shadow-sm">
+		<div className="relative h-[calc(100vh-12rem)] min-h-155 overflow-hidden rounded-3xl border bg-[radial-gradient(circle_at_center,var(--card),var(--muted))] shadow-sm">
 			<ReactFlow
 				nodes={visibleNodes}
 				edges={visibleEdges}
@@ -1328,11 +1339,25 @@ export function SkillMap({ categories }: { categories: SkillTreeCategory[] }) {
 					className="flex flex-col items-start gap-2"
 				>
 					<Legend />
-					<CategoryPicker
-						categories={categories}
-						selectedId={selectedCategoryId}
-						onSelect={focusCategory}
-					/>
+					<div className="flex max-w-full flex-wrap items-stretch gap-2">
+						<CategoryPicker
+							categories={categories}
+							selectedId={selectedCategoryId}
+							onSelect={focusCategory}
+						/>
+						<AddCategoryDialog
+							trigger={
+								<button
+									type="button"
+									onPointerDown={(event) => event.stopPropagation()}
+									className="nodrag nopan pointer-events-auto flex shrink-0 items-center gap-1.5 rounded-xl border bg-background/88 px-3 py-1.5 text-[11px] font-medium text-muted-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-muted hover:text-foreground"
+								>
+									<FolderPlus className="size-3.5" />
+									Add category
+								</button>
+							}
+						/>
+					</div>
 				</Panel>
 				<Panel position="top-right">
 					<SearchBar

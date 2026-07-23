@@ -1,8 +1,9 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { FolderPlus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { SkillTree } from "@/ui/components/browse/skill-tree";
+import { AddCategoryDialog } from "@/ui/components/categories/add-category-dialog";
 import { Button } from "@/ui/components/ui/button";
 import { Card, CardContent } from "@/ui/components/ui/card";
 import { Input } from "@/ui/components/ui/input";
@@ -160,6 +161,14 @@ export function BrowseExplorer() {
 					>
 						{allExpanded ? "Collapse all" : "Expand all"}
 					</Button>
+					<AddCategoryDialog
+						trigger={
+							<Button size="sm" className="ml-auto h-9 gap-1.5 px-3">
+								<FolderPlus className="size-4" />
+								Add category
+							</Button>
+						}
+					/>
 				</div>
 
 				<div className="flex flex-wrap items-center gap-x-6 gap-y-3">

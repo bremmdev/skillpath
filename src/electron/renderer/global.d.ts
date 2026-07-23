@@ -1,6 +1,7 @@
 import type {
 	Category,
 	Concept,
+	CreateCategoryInput,
 	CreateConceptInput,
 	DashboardStats,
 	LearningFocus,
@@ -19,6 +20,7 @@ declare global {
 		api: {
 			categories: {
 				get: () => Promise<Category[]>;
+				create: (input: CreateCategoryInput) => Promise<Category>;
 			};
 			skillTree: {
 				get: () => Promise<SkillTreeCategory[]>;
